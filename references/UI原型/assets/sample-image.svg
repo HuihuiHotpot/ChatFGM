@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="示例图片：灰度坐标网格与刻度">
+  <rect width="1400" height="900" fill="#ffffff"/>
+  <rect x="32.5" y="32.5" width="1335" height="835" fill="none" stroke="#e2e4e7" stroke-width="1"/>
+
+  <g stroke="#eef0f2" stroke-width="1">
+    <path d="M100 100h1200M100 200h1200M100 300h1200M100 400h1200M100 500h1200M100 600h1200M100 700h1200M100 800h1200"/>
+    <path d="M100 100v700M200 100v700M300 100v700M400 100v700M500 100v700M600 100v700M700 100v700M800 100v700M900 100v700M1000 100v700M1100 100v700M1200 100v700M1300 100v700"/>
+  </g>
+
+  <g stroke="#c9ced4" stroke-width="1" fill="none">
+    <path d="M100 72h1200"/>
+    <path d="M150 72v-8M250 72v-8M350 72v-8M450 72v-8M550 72v-8M650 72v-8M750 72v-8M850 72v-8M950 72v-8M1050 72v-8M1150 72v-8M1250 72v-8"/>
+    <path d="M150 72v-18M350 72v-18M550 72v-18M750 72v-18M950 72v-18M1150 72v-18"/>
+    <path d="M72 100v700"/>
+    <path d="M72 150h-8M72 250h-8M72 350h-8M72 450h-8M72 550h-8M72 650h-8M72 750h-8"/>
+    <path d="M72 150h-18M72 350h-18M72 550h-18M72 750h-18"/>
+  </g>
+
+  <g stroke="#b7bcc3" stroke-width="1.4" fill="none">
+    <path d="M32 32h28M32 32v28M1368 32h-28M1368 32v28M32 868h28M32 868v-28M1368 868h-28M1368 868v-28"/>
+  </g>
+
+  <rect x="400" y="270" width="600" height="360" fill="#fbfbfc" stroke="#dfe3e7" stroke-width="1.2"/>
+  <g stroke="#e9ebee" stroke-width="1">
+    <path d="M400 450h600M700 270v360"/>
+  </g>
+  <g stroke="#aeb4bb" stroke-width="1.6" fill="none" stroke-linecap="round">
+    <path d="M478 450h444"/>
+    <path d="M486 444l-9 6 9 6M914 444l9 6-9 6"/>
+    <path d="M700 328v244"/>
+    <path d="M694 336l6-9 6 9M694 564l6 9 6-9"/>
+  </g>
+  <g stroke="#9aa1a9" stroke-width="1.2" fill="none">
+    <circle cx="700" cy="450" r="52"/>
+    <circle cx="700" cy="450" r="104" stroke="#c6cbd1"/>
+  </g>
+
+  <g font-family="Segoe UI, Microsoft YaHei UI, sans-serif">
+    <text x="700" y="214" font-size="30" font-weight="600" text-anchor="middle" fill="#3a4048">示例图片</text>
+    <text x="700" y="246" font-size="15" text-anchor="middle" fill="#5b626b">1400 × 900 像素 · 用于检查缩放与拖动</text>
+    <text x="700" y="668" font-size="14" text-anchor="middle" fill="#737b85">示意图，不代表任何仿真结果</text>
+    <text x="100" y="836" font-size="14" fill="#737b85">ChatFGM · 示例图像资源</text>
+    <text x="1300" y="836" font-size="14" text-anchor="end" fill="#737b85">SVG · 1400 × 900</text>
+  </g>
+</svg>

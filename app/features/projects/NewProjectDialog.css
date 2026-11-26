@@ -1,0 +1,112 @@
+.new-project-dialog .modal-field + .modal-field {
+  margin-top: 18px;
+}
+
+.new-project-dialog .modal-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--bg-raised);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 32px;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.form-select:hover:not(:disabled),
+.form-input:hover:not(:disabled) {
+  border-color: var(--n-250);
+}
+
+.form-select:focus-visible,
+.form-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.form-select:disabled,
+.form-input:disabled {
+  border-color: var(--line);
+  background: var(--bg-panel);
+  color: var(--text-faint);
+}
+
+.form-input {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.form-input::placeholder {
+  color: var(--text-faint);
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+
+.modal-path-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.modal-path-row .form-input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.modal-path-row .ui-button {
+  flex: 0 0 auto;
+  min-width: 76px;
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+
+.modal-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-faint);
+}
+
+.modal-target-path {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.new-project-dialog .modal-overwrite-hint {
+  color: var(--warning-ink);
+}
+
+.modal-error {
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.new-project-dialog .modal-error {
+  margin-top: 6px;
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Batch Jobs &#8212; Ember 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=34905f61" />
+    <script src="../_static/documentation_options.js?v=e0a75244"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Input Files" href="../input.html" />
+    <link rel="prev" title="Sequential Simulations (multirun)" href="multirun.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../input.html" title="Input Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multirun.html" title="Sequential Simulations (multirun)"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Ember 1.5.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Batch Jobs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="batch-jobs">
+<h1>Batch Jobs<a class="headerlink" href="#batch-jobs" title="Link to this heading">¶</a></h1>
+<p>This example demonstrates some features that are useful when running Ember on a
+shared multi-node cluster that uses a batch queueing system such as Grid Engine.</p>
+<p><code class="docutils literal notranslate"><span class="pre">example_batch.py</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1">#$ -pe singlenode 8</span>
+<span class="c1">#$ -l normal</span>
+<span class="c1">#$ -l h_rt=120:00:00</span>
+<span class="c1">#$ -j y</span>
+<span class="c1">#$ -o job-output-example-parallel.txt</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Example of running flames multiple configuration conditions (equivalence ratios,</span>
+<span class="sd">temperatures, dilutions, etc). Default flame: Lean methane opposing hot products</span>
+<span class="sd">in planar opposed jet configuration.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ember</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">outputDir</span> <span class="o">=</span> <span class="s1">&#39;run/ex_batch/ex-parallel-phi</span><span class="si">%4.2f</span><span class="s1">&#39;</span>
+<span class="n">logFile</span> <span class="o">=</span> <span class="s1">&#39;run/ex_batch/out-ex-parallel-phi</span><span class="si">%4.2f</span><span class="s1">&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">phi</span><span class="p">):</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span>
+        <span class="n">General</span><span class="p">(</span><span class="n">nThreads</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span>
+        <span class="n">Paths</span><span class="p">(</span><span class="n">outputDir</span><span class="o">=</span><span class="n">outputDir</span> <span class="o">%</span> <span class="n">phi</span><span class="p">,</span>
+              <span class="n">logFile</span><span class="o">=</span><span class="n">logFile</span> <span class="o">%</span> <span class="n">phi</span>
+              <span class="p">),</span>
+        <span class="n">InitialCondition</span><span class="p">(</span><span class="n">equivalenceRatio</span><span class="o">=</span><span class="n">phi</span><span class="p">),</span>
+        <span class="n">StrainParameters</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                         <span class="n">final</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+        <span class="n">Times</span><span class="p">(</span><span class="n">profileStepInterval</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+              <span class="n">profileTimeInterval</span><span class="o">=</span><span class="mf">5e-3</span><span class="p">))</span>
+
+    <span class="n">conf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.90</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]:</span>
+        <span class="n">start</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;All done!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="working-with-grid-engine">
+<h2>Working with Grid Engine<a class="headerlink" href="#working-with-grid-engine" title="Link to this heading">¶</a></h2>
+<p>The lines above starting with <code class="docutils literal notranslate"><span class="pre">#$</span></code> are directives for the Grid Engine batch
+queueing system. Since this script is itself executable, it is not necessary to
+write a separate job submission script. The various resource requests need to be
+specified based on the configuration of the cluster you are using.</p>
+</section>
+<section id="running-in-parallel">
+<h2>Running in parallel<a class="headerlink" href="#running-in-parallel" title="Link to this heading">¶</a></h2>
+<p>The option <code class="docutils literal notranslate"><span class="pre">nThreads=8</span></code> means that Ember will use 8 processors simultaneously.
+This mirrors the resource request to the queue manager for an 8 processor node,
+<code class="docutils literal notranslate"><span class="pre">-pe</span> <span class="pre">singlenode</span> <span class="pre">8</span></code>. The name of the “parallel environment”, <code class="docutils literal notranslate"><span class="pre">singlenode</span></code> in
+this case, will depend on the configuration of your cluster. Ember is written as
+a multithreaded parallel code, so all of the processors allocated to it need to
+be on the same node.</p>
+</section>
+<section id="running-several-cases-sequentially">
+<h2>Running several cases sequentially<a class="headerlink" href="#running-several-cases-sequentially" title="Link to this heading">¶</a></h2>
+<p>In this script, we define a function that solves a case at a particular
+equivalence ratio, then call that function for each equivalence ratio of
+interest. Python’s string interpolation (using the <code class="docutils literal notranslate"><span class="pre">%</span></code> operator) is used to
+generate consistent names for the output files. This method can be used to set
+up parametric studies of various input variables.</p>
+<p>To submit this job to the queue, you might use the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ qsub example_batch.py
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Batch Jobs</a><ul>
+<li><a class="reference internal" href="#working-with-grid-engine">Working with Grid Engine</a></li>
+<li><a class="reference internal" href="#running-in-parallel">Running in parallel</a></li>
+<li><a class="reference internal" href="#running-several-cases-sequentially">Running several cases sequentially</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="multirun.html"
+                          title="previous chapter">Sequential Simulations (multirun)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../input.html"
+                          title="next chapter">Input Files</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/batch.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../input.html" title="Input Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multirun.html" title="Sequential Simulations (multirun)"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Ember 1.5.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Batch Jobs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2008-2025, Raymond Speth.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+.ui-dialog-content.leave-dialog {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.leave-dialog .ui-dialog-description {
+  color: var(--text-muted);
+}
+
+.leave-dialog .ui-dialog-description strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.leave-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.leave-section-title {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.leave-section-hint {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
+
+.leave-directory-warning {
+  color: var(--warning-ink);
+}
+
+.leave-section-hint strong {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.leave-list {
+  max-height: 148px;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-control);
+  background: var(--bg-panel);
+  list-style: none;
+}
+
+.leave-list li {
+  padding: 7px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.leave-list li + li {
+  border-top: 1px solid var(--line-soft);
+}
+
+.leave-list-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.leave-stop {
+  margin-top: 10px;
+}
+
+.leave-dialog .modal-error {
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.leave-dialog .leave-section .modal-error {
+  margin-top: 8px;
+}
+
+.leave-progress {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.leave-dialog .ui-dialog-footer {
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}

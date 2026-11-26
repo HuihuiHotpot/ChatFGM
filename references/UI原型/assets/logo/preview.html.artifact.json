@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "assets/logo/preview.html",
+  "entry": "assets/logo/preview.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-10-29T09:06:43.944Z",
+  "updatedAt": "2026-10-29T09:06:43.944Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

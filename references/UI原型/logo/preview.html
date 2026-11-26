@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChatFGM 图标配色预览</title>
+<style>
+  :root {
+    --n-50: #faf9f7;
+    --n-200: #e7e4df;
+    --n-700: #57524a;
+    --n-950: #191714;
+    --brand: #b5542c;
+    --brand-soft: #fbeee8;
+    --brand-line: #eed3c5;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--n-950);
+    background: #ffffff;
+  }
+  h1 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .lead { margin: 0 0 24px; color: var(--n-700); font-size: 12.5px; }
+  h2 { margin: 28px 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--n-700); }
+  .row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 28px; }
+  .cell { text-align: center; }
+  .cell span { display: block; margin-top: 6px; font-size: 11px; color: var(--n-700); }
+  .logo { display: block; }
+  .s20 { width: 20px; height: 20px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s48 { width: 48px; height: 48px; }
+  .s128 { width: 128px; height: 128px; }
+  .plates { display: flex; gap: 12px; flex-wrap: wrap; }
+  .plate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--n-200);
+    border-radius: 8px;
+    font-size: 12.5px;
+  }
+  .plate--light { background: #ffffff; }
+  .plate--panel { background: var(--n-50); }
+  .plate--warm { background: var(--brand-soft); border-color: var(--brand-line); }
+  .plate--dark { background: var(--n-950); border-color: var(--n-950); color: #f6f4f1; }
+  .header-demo {
+    display: inline-flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--n-200);
+    border-radius: 8px;
+    background: #ffffff;
+  }
+  .header-demo .name {
+    display: inline-flex;
+    align-items: center;
+    margin-left: -8px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .header-demo .name .logo { margin-right: 8px; }
+  .files { margin: 8px 0 0; padding-left: 18px; color: var(--n-700); font-size: 12.5px; }
+  .files code { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--n-950); }
+</style>
+</head>
+<body>
+  <h1>ChatFGM 图标配色预览</h1>
+  <p class="lead">原始 128×128 图标只在 alpha 通道内整体换色，轮廓、比例、笔画与留白完全保留，未重绘、未矢量化。</p>
+
+  <h2>尺寸</h2>
+  <div class="row">
+    <div class="cell"><img class="logo s20" src="chatfgm-logo-color.png" alt=""><span>20px 顶栏</span></div>
+    <div class="cell"><img class="logo s24" src="chatfgm-logo-color.png" alt=""><span>24px</span></div>
+    <div class="cell"><img class="logo s32" src="chatfgm-logo-color.png" alt=""><span>32px</span></div>
+    <div class="cell"><img class="logo s48" src="chatfgm-logo-color.png" alt=""><span>48px</span></div>
+    <div class="cell"><img class="logo s128" src="chatfgm-logo-color.png" alt=""><span>128px 原始尺寸</span></div>
+  </div>
+
+  <h2>底色</h2>
+  <div class="plates">
+    <div class="plate plate--light"><img class="logo s24" src="chatfgm-logo-color.png" alt="">白色画布</div>
+    <div class="plate plate--panel"><img class="logo s24" src="chatfgm-logo-color.png" alt="">面板 #faf9f7</div>
+    <div class="plate plate--warm"><img class="logo s24" src="chatfgm-logo-color.png" alt="">品牌浅底 #fbeee8</div>
+    <div class="plate plate--dark"><img class="logo s24" src="chatfgm-logo-inverse.png" alt="">深色反白</div>
+  </div>
+
+  <h2>顶栏实际位置</h2>
+  <div class="header-demo">
+    <span class="name"><img class="logo s20" src="chatfgm-logo-color.png" alt=""><span>ChatFGM</span></span>
+  </div>
+
+  <h2>文件</h2>
+  <ul class="files">
+    <li><code>chatfgm-logo-color.png</code>：#b5542c 主色导出，128px，应用内按 20px 显示。</li>
+    <li><code>chatfgm-logo-brand.png</code>：#8f3b1b 深色导出，浅底加深时使用。</li>
+    <li><code>chatfgm-logo-inverse.png</code>：白色导出，深色底反白时使用。</li>
+    <li><code>chatfgm-icon.png</code>：原始单色图标，保留作为 alpha 掩模母版。</li>
+  </ul>
+</body>
+</html>

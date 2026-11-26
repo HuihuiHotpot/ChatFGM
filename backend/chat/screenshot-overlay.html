@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+    />
+    <title>选择截图区域</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #111;
+        font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        user-select: none;
+        cursor: crosshair;
+      }
+      #shot {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: fill;
+        pointer-events: none;
+      }
+      #shade {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 17, 20, 0.28);
+        pointer-events: none;
+      }
+      #selection {
+        position: absolute;
+        display: none;
+        border: 2px solid #ff6b45;
+        box-shadow: 0 0 0 9999px rgba(12, 14, 17, 0.45);
+        background: transparent;
+        pointer-events: none;
+      }
+      #selection.visible {
+        display: block;
+      }
+      #size {
+        position: absolute;
+        display: none;
+        padding: 3px 7px;
+        border-radius: 4px;
+        background: rgba(17, 20, 24, 0.88);
+        color: #fff;
+        font-size: 12px;
+        line-height: 1.4;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      #size.visible {
+        display: block;
+      }
+      #hint {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 9px 16px;
+        border-radius: 8px;
+        background: rgba(17, 20, 24, 0.88);
+        color: #f5f5f4;
+        font-size: 13px;
+        line-height: 1.5;
+        pointer-events: none;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+      }
+      #status {
+        position: fixed;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 7px 13px;
+        border-radius: 6px;
+        background: rgba(17, 20, 24, 0.9);
+        color: #f5d5c8;
+        font-size: 12px;
+        line-height: 1.5;
+        display: none;
+        max-width: 80vw;
+        white-space: pre-wrap;
+        text-align: center;
+      }
+      #status.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="shot" alt="" />
+    <div id="shade"></div>
+    <div id="selection"></div>
+    <div id="size"></div>
+    <div id="hint">拖动框选（限单屏）· 右键或 Esc 取消</div>
+    <div id="status"></div>
+    <script>
+      (() => {
+        const shot = document.getElementById('shot');
+        const shade = document.getElementById('shade');
+        const selection = document.getElementById('selection');
+        const sizeLabel = document.getElementById('size');
+        const status = document.getElementById('status');
+        const bridge = window.chatfgmScreenshot;
+        let startX = 0;
+        let startY = 0;
+        let active = false;
+        let submitting = false;
+        let rect = null;
+
+        function showStatus(message) {
+          status.textContent = message;
+          status.classList.add('visible');
+        }
+
+        function hideStatus() {
+          status.textContent = '';
+          status.classList.remove('visible');
+        }
+
+        function drawRect(next) {
+          rect = next;
+          if (!next) {
+            selection.classList.remove('visible');
+            sizeLabel.classList.remove('visible');
+            return;
+          }
+          selection.style.left = next.x + 'px';
+          selection.style.top = next.y + 'px';
+          selection.style.width = next.width + 'px';
+          selection.style.height = next.height + 'px';
+          selection.classList.add('visible');
+          sizeLabel.textContent =
+            Math.round(next.width) + ' × ' + Math.round(next.height);
+          sizeLabel.style.left =
+            Math.min(
+              window.innerWidth - 90,
+              Math.max(4, next.x + next.width - 80),
+            ) + 'px';
+          sizeLabel.style.top =
+            Math.min(
+              window.innerHeight - 28,
+              Math.max(4, next.y + next.height + 6),
+            ) + 'px';
+          sizeLabel.classList.add('visible');
+        }
+
+        function pointFromEvent(event) {
+          return {
+            x: Math.min(
+              window.innerWidth,
+              Math.max(0, event.clientX),
+            ),
+            y: Math.min(
+              window.innerHeight,
+              Math.max(0, event.clientY),
+            ),
+          };
+        }
+
+        function cancel() {
+          if (submitting) return;
+          submitting = true;
+          hideStatus();
+          Promise.resolve(bridge && bridge.cancel())
+            .catch(() => undefined)
+            .finally(() => {
+              submitting = false;
+            });
+        }
+
+        async function submit() {
+          if (!rect || submitting) return;
+          if (rect.width < 4 || rect.height < 4) {
+            showStatus('选区过小，请重新框选。');
+            return;
+          }
+          submitting = true;
+          hideStatus();
+          selection.style.borderColor = '#f0b429';
+          try {
+            const result = await bridge.submit(rect);
+            if (!result || result.ok !== true) {
+              submitting = false;
+              selection.style.borderColor = '#ff6b45';
+              showStatus(
+                (result && result.message) || '截图提交失败，请重新选择。',
+              );
+            }
+          } catch {
+            submitting = false;
+            selection.style.borderColor = '#ff6b45';
+            showStatus('截图提交失败，请重新选择。');
+          }
+        }
+
+        window.addEventListener('pointerdown', (event) => {
+          if (submitting) return;
+          if (event.button === 2) {
+            cancel();
+            return;
+          }
+          if (event.button !== 0) return;
+          const point = pointFromEvent(event);
+          startX = point.x;
+          startY = point.y;
+          active = true;
+          hideStatus();
+          drawRect({ x: point.x, y: point.y, width: 0, height: 0 });
+          document.body.setPointerCapture?.(event.pointerId);
+        });
+
+        window.addEventListener('pointermove', (event) => {
+          if (!active) return;
+          const point = pointFromEvent(event);
+          const x = Math.min(startX, point.x);
+          const y = Math.min(startY, point.y);
+          drawRect({
+            x,
+            y,
+            width: Math.abs(point.x - startX),
+            height: Math.abs(point.y - startY),
+          });
+        });
+
+        window.addEventListener('pointerup', (event) => {
+          if (!active) return;
+          active = false;
+          const point = pointFromEvent(event);
+          const x = Math.min(startX, point.x);
+          const y = Math.min(startY, point.y);
+          drawRect({
+            x,
+            y,
+            width: Math.abs(point.x - startX),
+            height: Math.abs(point.y - startY),
+          });
+          document.body.releasePointerCapture?.(event.pointerId);
+          void submit();
+        });
+
+        window.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            cancel();
+          }
+        });
+
+        window.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+          cancel();
+        });
+
+        async function init() {
+          try {
+            const config = await bridge.ready();
+            if (!config || !config.imageUrl) {
+              showStatus('截图初始化失败，请关闭后重试。');
+              return;
+            }
+            shot.src = config.imageUrl;
+            shade.style.display = 'none';
+            shot.onload = () => {
+              shot.style.visibility = 'visible';
+            };
+          } catch {
+            showStatus('截图初始化失败，请关闭后重试。');
+          }
+        }
+
+        void init();
+      })();
+    </script>
+  </body>
+</html>

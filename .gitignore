@@ -1,0 +1,30 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+.venv/
+venv/
+
+# Dependencies and Python caches
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend build and cache
+/dist/
+/.cache/
+*.tsbuildinfo
+npm-debug.log*
+
+# Generated test output
+/test/results/
+/test/coverage/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,66 @@
+.ui-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--bg-raised);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.ui-button:hover:not(:disabled) {
+  border-color: var(--n-250);
+  background: var(--bg-hover);
+}
+
+.ui-button:active:not(:disabled) {
+  background: var(--bg-active);
+}
+
+.ui-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.ui-button--primary {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+}
+
+.ui-button--primary:active:not(:disabled) {
+  border-color: var(--brand-active);
+  background: var(--brand-active);
+}
+
+.ui-button--primary:focus-visible {
+  outline: 2px solid var(--brand-active);
+  outline-offset: 2px;
+}
+
+.ui-button:disabled,
+.ui-button:disabled:hover,
+.ui-button:disabled:active {
+  border-color: var(--line);
+  background: var(--bg-panel);
+  color: var(--text-faint);
+  cursor: default;
+}

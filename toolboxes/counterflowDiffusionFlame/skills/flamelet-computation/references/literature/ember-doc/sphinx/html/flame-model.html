@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Flame Model &#8212; Ember 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css?v=34905f61" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Strained Flame Configurations" href="flame-configurations.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flame-configurations.html" title="Strained Flame Configurations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Ember 1.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Flame Model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="flame-model">
+<span id="sec-flame-model"></span><h1>Flame Model<a class="headerlink" href="#flame-model" title="Link to this heading">¶</a></h1>
+<p>The elemental flame model consists of a laminar flame stabilized in a
+stagnation flow. The parameters of the stagnation flow may be imposed
+explicitly, or provided through coupling with an outer flow within which the
+elemental flame is embedded. The kinematics of the coupling between the
+elemental flame and the outer flow have been described elsewhere [#Marzouk1999].
+Here, the flame is parameterized by the strain rate and position (radius) of
+the stagnation point in the non-reacting flow.</p>
+<p>The stagnation flow models are described in
+<a class="reference internal" href="flame-configurations.html#sec-strained-flame-configurations"><span class="std std-ref">Strained Flame Configurations</span></a>. The general 3D conservation equations
+for mass, momentum, energy and chemical species are reduced to one dimension by
+using a boundary layer approximation across the flame. The derivation of these
+governing equations is contained in Section <a class="reference internal" href="derivation.html#sec-governing-equations"><span class="std std-ref">Governing Equations</span></a>.
+The boundary conditions for the elemental flame model are discussed in
+<a class="reference internal" href="boundary-conditions.html#sec-boundary-conditions"><span class="std std-ref">Boundary Conditions</span></a>.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flame-configurations.html">Strained Flame Configurations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flame-configurations.html#single-opposed-jet-flame">Single Opposed-Jet Flame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flame-configurations.html#twin-opposed-jet-flame">Twin Opposed-Jet Flame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flame-configurations.html#tubular-flame-at-zero-stagnation-radius">Tubular Flame at Zero Stagnation Radius</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flame-configurations.html#tubular-flame-at-finite-stagnation-radius">Tubular Flame at Finite Stagnation Radius</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flame-configurations.html#unified-formulation">Unified Formulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="derivation.html">Governing Equations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="derivation.html#momentum-equation">Momentum Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivation.html#continuity-equation">Continuity Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivation.html#species-equation">Species Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivation.html#energy-equation">Energy Equation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="boundary-conditions.html">Boundary Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="boundary-conditions.html#single-opposed-jet">Single Opposed Jet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boundary-conditions.html#central-control-volume">Central Control Volume</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="installation.html"
+                          title="previous chapter">Installation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="flame-configurations.html"
+                          title="next chapter">Strained Flame Configurations</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/flame-model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flame-configurations.html" title="Strained Flame Configurations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Ember 1.5.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Flame Model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2008-2025, Raymond Speth.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

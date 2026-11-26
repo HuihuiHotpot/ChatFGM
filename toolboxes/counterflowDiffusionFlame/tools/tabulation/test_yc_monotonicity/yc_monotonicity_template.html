@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candidate Yc Monotonicity Comparison</title>
+<style>
+  :root {
+    color-scheme: light;
+    --font-size-base: 16px;
+    --background: #fff;
+    --foreground: #202730;
+    --muted-foreground: #53616f;
+    --popover: #fff;
+    --popover-foreground: var(--foreground);
+    --border: #e7eaed;
+    --input: #cdd5de;
+    --accent: #f0f4f8;
+    --blue: #2468ba;
+    --viz-series-1: #2867bd;
+    --viz-series-2: #d46722;
+    --viz-series-3: #3c975f;
+    --viz-series-4: #bd528b;
+    --viz-series-5: #845ac9;
+    --viz-series-6: #228a87;
+    font: 1rem/1.5 "Segoe UI", system-ui, sans-serif;
+    color: var(--foreground);
+    background: var(--background);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { max-width: 76rem; margin: 0 auto; padding: 1.35rem clamp(1rem, 3vw, 2.2rem); }
+  h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+  sub { font-size: .75em; }
+  button, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .sr-only { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .text-small { font-size: .875rem; }
+  .text-muted { color: var(--muted-foreground); }
+  .text-center { text-align: center; }
+  .text-end { text-align: end; }
+  .text-nowrap { white-space: nowrap; }
+  .tabular-nums, .text-end { font-variant-numeric: tabular-nums; }
+  .cursor-interaction, .btn { cursor: pointer; }
+  .form-select { min-width: 0; width: 100%; padding: .35rem .65rem; background: var(--background); border: 1px solid var(--border); border-radius: 999px; }
+  .viz-row { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 999px; padding: .4rem .8rem; background: transparent; }
+  .btn:hover { background: var(--accent); }
+  .btn[aria-pressed="true"] { color: #fff; background: var(--blue); }
+  .btn > svg { display: block; width: 1rem; height: 1rem; }
+  .table-responsive { overflow-x: auto; }
+  .table { width: 100%; border-spacing: 0; font-size: .9rem; }
+  .table :is(td, th) { padding-block: .65rem; border-block-end: 1px solid var(--border); }
+  .table thead th { vertical-align: top; }
+  .table :is(td, th):first-child { text-align: start; }
+  .table th { font-weight: 600; }
+</style>
+</head>
+<body>
+<section id="yc-reversal-explorer" lang="en">
+  <h1>Candidate Y<sub>c</sub> Monotonicity Comparison</h1>
+  <div class="yre-controls">
+    <div class="yre-case-row">
+      <label class="text-small" for="yre-case">Case</label>
+      <select class="form-select" id="yre-case" data-yre-case></select>
+      <span class="text-small text-muted" data-yre-direction></span>
+    </div>
+    <div class="yre-case-readout text-small" data-yre-case-readout hidden>
+      <span data-yre-case-name></span>
+      <span class="text-muted" data-yre-case-step></span>
+    </div>
+  </div>
+  <figure class="yre-figure">
+    <div class="yre-plot-toolbar">
+      <div class="yre-z-field">
+        <span class="text-small" id="yre-z-label">Mixture fraction <i>Z</i></span>
+        <div class="viz-row" role="group" aria-labelledby="yre-z-label" data-yre-z></div>
+      </div>
+      <div class="viz-row yre-tools" role="group" aria-label="Plot view">
+        <button type="button" class="btn" data-yre-zoom="0.625" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5m-13-10h6m-3-3v6"/></svg></button>
+        <button type="button" class="btn" data-yre-zoom="1.6" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5m-13-10h6"/></svg></button>
+        <button type="button" class="btn" data-yre-reset title="Reset view" aria-label="Reset view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v5h5M4 10a8 8 0 1 1 0 5"/></svg></button>
+      </div>
+    </div>
+    <div class="yre-chart" data-yre-chart></div>
+    <figcaption class="sr-only" aria-live="polite" aria-atomic="true" data-yre-focus></figcaption>
+  </figure>
+  <div class="table-responsive">
+    <table class="table yre-statistics" aria-label="Reversal statistics at the selected mixture fraction">
+      <colgroup>
+        <col class="yre-col-candidate">
+        <col class="yre-col-steps">
+        <col class="yre-col-reversal">
+        <col class="yre-col-time">
+        <col class="yre-col-span">
+      </colgroup>
+      <thead><tr>
+        <th scope="col">Candidate</th>
+        <th scope="col" class="text-end text-nowrap" title="Reversed steps out of all intervals between adjacent profiles">Reversed steps</th>
+        <th scope="col" class="text-end" title="Largest single reversal as a percentage of this candidate’s raw Yc span">Max reversal <span class="yre-column-note text-small text-muted">(% of span)</span></th>
+        <th scope="col" class="text-center" title="Largest single reversal. An arrow opens every interval in sample order." data-yre-interval-heading></th>
+        <th scope="col" class="text-end">Raw Y<sub>c</sub> span</th>
+      </tr></thead>
+      <tbody data-yre-rows></tbody>
+    </table>
+  </div>
+  <div id="yre-step-popover" popover="auto" role="group" aria-label="Reversal steps">
+    <div class="yre-step-heading text-small" data-yre-interval-heading></div>
+    <div class="yre-step-list tabular-nums" data-yre-step-list></div>
+  </div>
+</section>
+<style>
+  #yc-reversal-explorer { display:grid; grid-template-columns:minmax(0,1fr); gap:calc(var(--font-size-base) * 1.15); }
+  #yc-reversal-explorer .yre-case-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:calc(var(--font-size-base) * .57); }
+  #yc-reversal-explorer .yre-case-readout { overflow-wrap:anywhere; margin-block-start:calc(var(--font-size-base) * .29); }
+  #yc-reversal-explorer .yre-case-readout span { display:inline-block; margin-inline-end:.6em; }
+  #yc-reversal-explorer .yre-figure { min-width:0; margin:0; }
+  #yc-reversal-explorer .yre-plot-toolbar { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:calc(var(--font-size-base) * .75); margin-block-end:calc(var(--font-size-base) * .78); }
+  #yc-reversal-explorer .yre-z-field { display:grid; flex:1 1 24ch; min-inline-size:0; gap:calc(var(--font-size-base) * .38); }
+  #yc-reversal-explorer .yre-tools { margin-inline-start:auto; }
+  #yc-reversal-explorer .yre-key { display:inline-block; inline-size:1.65em; block-size:.6em; margin-inline-end:.45em; vertical-align:.05em; }
+  #yc-reversal-explorer .yre-chart { min-width:0; touch-action:none; user-select:none; cursor:grab; }
+  #yc-reversal-explorer .yre-chart[data-panning] { cursor:grabbing; }
+  #yc-reversal-explorer .yre-plot { display:block; width:100%; }
+  #yc-reversal-explorer .yre-plot text { fill:var(--muted-foreground); }
+  #yc-reversal-explorer .yre-plot .yre-annotation { fill:var(--foreground); stroke:var(--background); stroke-width:3px; stroke-linejoin:round; paint-order:stroke; pointer-events:none; }
+  #yc-reversal-explorer .yre-statistics { table-layout:fixed; min-inline-size:calc(var(--font-size-base) * 37); }
+  #yc-reversal-explorer .yre-col-candidate { width:25%; }
+  #yc-reversal-explorer .yre-col-steps { width:16%; }
+  #yc-reversal-explorer .yre-col-reversal { width:19%; }
+  #yc-reversal-explorer .yre-col-time { width:23%; }
+  #yc-reversal-explorer .yre-col-span { width:17%; }
+  #yc-reversal-explorer .yre-statistics :is(th,td) { padding-inline:calc(var(--font-size-base) * .6); }
+  #yc-reversal-explorer .yre-statistics tbody :is(th,td) { vertical-align:middle; }
+  #yc-reversal-explorer .yre-column-note { display:block; margin-block-start:.2em; }
+  #yc-reversal-explorer .yre-interval {
+    inline-size:min(100%, var(--yre-interval-width, 12.5ch));
+    padding:.12em .55em;
+    border:1px solid transparent;
+    border-radius:999px;
+    background:var(--background);
+    box-shadow:0 1px 4px color-mix(in srgb, var(--foreground) 18%, transparent);
+    color:inherit;
+    font:inherit;
+  }
+  #yc-reversal-explorer .yre-interval:hover { box-shadow:0 2px 6px color-mix(in srgb, var(--foreground) 25%, transparent); }
+  #yc-reversal-explorer .yre-interval:is([aria-pressed="true"],[aria-expanded="true"]) { border-color:color-mix(in srgb, var(--blue) 40%, var(--background)); background:color-mix(in srgb, var(--blue) 16%, var(--background)); box-shadow:none; }
+  #yc-reversal-explorer .yre-interval[popovertarget] { display:inline-flex; justify-content:center; align-items:center; gap:.35em; white-space:nowrap; }
+  #yc-reversal-explorer .yre-interval-chevron { flex:none; inline-size:.9em; block-size:.9em; }
+  #yc-reversal-explorer [aria-expanded="true"] .yre-interval-chevron { transform:rotate(180deg); }
+  #yc-reversal-explorer #yre-step-popover {
+    position:absolute;
+    inset:auto;
+    margin:0;
+    inline-size:min(13rem, calc(100% - 1rem));
+    max-block-size:calc(100dvh - 16px);
+    overflow:clip;
+    padding:0;
+    background:var(--popover);
+    color:var(--popover-foreground);
+    border:1px solid var(--input);
+    border-radius:.7rem;
+  }
+  #yc-reversal-explorer #yre-step-popover:popover-open { display:flex; flex-direction:column; }
+  #yc-reversal-explorer .yre-step-heading { flex:none; padding:.65em .9em .45em; border-block-end:1px solid var(--border); }
+  #yc-reversal-explorer .yre-step-list {
+    min-block-size:0;
+    max-block-size:min(14rem, 48dvh);
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    scrollbar-gutter:stable;
+    padding:.25em;
+  }
+  #yc-reversal-explorer .yre-step-option {
+    display:block;
+    inline-size:100%;
+    text-align:start;
+    white-space:nowrap;
+    padding:.3em .7em;
+    border:0;
+    border-radius:.3em;
+    background:transparent;
+    color:inherit;
+    font:inherit;
+  }
+  #yc-reversal-explorer .yre-step-option:hover { background:var(--accent); }
+  #yc-reversal-explorer .yre-step-option[aria-pressed="true"] { background:color-mix(in srgb, var(--blue) 16%, var(--popover)); }
+  @media (max-width:540px) {
+    #yc-reversal-explorer [data-yre-direction] { grid-column:2; }
+  }
+</style>
+<script id="yc-reversal-explorer-data" type="application/json">__YC_MONOTONICITY_DATA__</script>
+<script>
+(() => {
+  const root = document.getElementById('yc-reversal-explorer');
+  const data = JSON.parse(document.getElementById('yc-reversal-explorer-data').textContent);
+  const continuation = 'steady_flame_continuation';
+  for (const group of data.cases) {
+    group.steps = [...new Set(group.frames.map(frame => frame.step))];
+    group.steadyStart = group.frames.findIndex(frame => frame.step===continuation);
+    group.usesSampleOrder = group.steadyStart>=0;
+    group.positions = group.frames.map((frame,i) => group.usesSampleOrder ? i+1 : frame.time_s*1000);
+  }
+  const find = selector => root.querySelector(selector);
+  const choose = find('[data-yre-case]');
+  const caseReadout = find('[data-yre-case-readout]');
+  const caseName = find('[data-yre-case-name]');
+  const caseStep = find('[data-yre-case-step]');
+  const direction = find('[data-yre-direction]');
+  const measure = document.createElement('canvas').getContext('2d');
+  const zChoices = find('[data-yre-z]');
+  const chart = find('[data-yre-chart]');
+  const rows = find('[data-yre-rows]');
+  const focus = find('[data-yre-focus]');
+  const stepPopover = find('#yre-step-popover');
+  const stepList = find('[data-yre-step-list]');
+  const entities = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'};
+  const escapeMarkup = text => text.replace(/[&<>"]/g, char => entities[char]);
+  const palette = [1, 2, 3, 4, 5, 6].map(i => `var(--viz-series-${i})`);
+  const patterns = ['', '6 3', '2 3', '8 3 2 3', '11 4'];
+  const candidates = data.inputs.candidates.map(({name},i) => ({
+    rawName:name,
+    name:escapeMarkup(name),
+    colour:palette[i % palette.length],
+    dash:patterns[i % patterns.length]
+  }));
+  const key = ({name,colour,dash}) => `<svg class="yre-key" viewBox="0 0 30 8" aria-hidden="true"><line x1="0" y1="4" x2="30" y2="4" stroke="${colour}" stroke-dasharray="${dash}" stroke-width="2"/></svg>${name}`;
+  const label = (x,y,s,anchor) => `<text class="text-small" x="${x}" y="${y}" text-anchor="${anchor}">${s}</text>`;
+  const line = (x1,y1,x2,y2,stroke='var(--border)',weight=1) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${weight}"/>`;
+  const pretty = (v,digits=5) => Number(v.toPrecision(digits)).toString();
+  const timeInterval = (a,b) => {
+    const places = a.toFixed(3) === b.toFixed(3) ? 6 : 3;
+    return a.toFixed(places) + '–' + b.toFixed(places);
+  };
+  const frameCoordinate = frame => frame.step===continuation ?
+    `${frame.target_strain_rate_s_inv} s⁻¹` : `${(frame.time_s*1000).toFixed(3)} ms`;
+  function interval(frameIndex) {
+    const group = dataset();
+    const [start,end] = group.frames.slice(frameIndex,frameIndex+2);
+    if (start.step!==end.step) return `${frameCoordinate(start)} → ${frameCoordinate(end)}`;
+    if (start.step===continuation) return `${start.target_strain_rate_s_inv}–${end.target_strain_rate_s_inv} s⁻¹`;
+    const text = timeInterval(start.time_s*1000,end.time_s*1000);
+    return group.usesSampleOrder ? `${text} ms` : text;
+  }
+  const ratio = r => r === null ? '—' : r === 0 ? '0%' : r < .001 ?
+    (r * 100).toPrecision(2) + '%' : (r * 100).toFixed(2) + '%';
+  const padded = (values, rate) => {
+    const lo = Math.min(...values), hi = Math.max(...values);
+    const margin = (hi - lo) * rate || Math.max(Math.abs(lo) * rate, 1e-10);
+    return [lo >= 0 ? Math.max(0, lo - margin) : lo - margin, hi + margin];
+  };
+  const length = range => range[1] - range[0];
+  const constrain = (range,bounds) => {
+    const span = Math.min(length(range), length(bounds));
+    const lo = Math.max(bounds[0], Math.min(range[0], bounds[1] - span));
+    return [lo, lo + span];
+  };
+  const ticks = (range,n) => Array.from({length:n},(_,i) => range[0] + length(range) * i / (n-1));
+  const displayTick = (v,step) => {
+    const digits = Math.min(12, Math.max(0, 1-Math.floor(Math.log10(step))));
+    return Number(v.toFixed(digits)).toString();
+  };
+  let zIndex = 0, selectedEvent = null, hoveredCandidate = null, openTrigger = null;
+  let full, view, viewport, pointer = null, animation = 0;
+  const dataset = () => data.cases[Number(choose.value)];
+  const comparison = () => dataset().by_z[zIndex];
+  function sizeTextFor(element) {
+    const style = getComputedStyle(element);
+    measure.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    return style;
+  }
+
+  function updateCaseReadout() {
+    const active = dataset();
+    caseName.textContent = active.case_name;
+    caseStep.textContent = active.steps.join(' → ');
+    direction.textContent = active.direction === 1 ? 'Expected to increase' : 'Expected to decrease';
+    const style = sizeTextFor(choose);
+    const available = choose.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 20;
+    caseReadout.hidden = measure.measureText(choose.options[choose.selectedIndex].text).width <= available;
+    choose.title = caseReadout.hidden ? '' : choose.options[choose.selectedIndex].text;
+  }
+
+  function viewportFor(width) {
+    const xTickCount = width < 410 ? 4 : 6;
+    const first = Math.ceil(view.x[0]);
+    const stride = Math.max(1,Math.ceil(length(view.x)/(xTickCount-1)));
+    const xTicks = dataset().usesSampleOrder ?
+      Array.from({length:Math.max(0,Math.floor((view.x[1]-first)/stride)+1)},(_,i)=>first+i*stride) :
+      ticks(view.x,xTickCount);
+    const yTicks = ticks(view.y, 5);
+    const xText = xTicks.map(v => dataset().usesSampleOrder ? String(v) : displayTick(v,length(view.x)/(xTickCount-1)));
+    const yText = yTicks.map(v => displayTick(v, length(view.y)/(yTicks.length-1)));
+    sizeTextFor(direction);
+    const widestY = Math.max(...yText.map(t=>measure.measureText(t).width));
+    const widestXEnd = Math.max(measure.measureText(xText[0] ?? '').width, measure.measureText(xText.at(-1) ?? '').width);
+    const left = Math.max(50, Math.ceil(widestY) + 14, Math.ceil(widestXEnd / 2) + 5);
+    const right = width - Math.max(22, Math.ceil(widestXEnd / 2) + 5);
+    const height = Math.max(305,Math.min(435,Math.round(width*.54)));
+    return {left,right,top:30,bottom:height-42,height,xTicks,yTicks,xText,yText};
+  }
+
+  function reversalValues(series,{start_index,end_index,delta_yc:delta}) {
+    const before = series.values[start_index];
+    const after = series.values[end_index];
+    const decimals = Math.min(15, Math.max(6, 2-Math.floor(Math.log10(Math.abs(delta)))));
+    return {
+      before:before.toFixed(decimals),
+      after:after.toFixed(decimals),
+      delta:(delta>0?'+':'−') + pretty(Math.abs(delta),4)
+    };
+  }
+
+  function reversalAnnotations(g, [start,end], values) {
+    const font = parseFloat(getComputedStyle(direction).fontSize);
+    const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
+    const placed = (text,x,y) => {
+      const half = measure.measureText(text).width/2 + 3;
+      return {half,x:clamp(x,g.left+half,g.right-half),y:clamp(y,g.top+font,g.bottom-font)};
+    };
+    const nearPoint = (text,point,side) => {
+      const awayFromCurve = point.outerY<point.y ? 1 : -1;
+      return placed(text,point.x + side*(measure.measureText(text).width/2 + 12),
+        point.y + awayFromCurve*(font*.6 + 5));
+    };
+    const before = nearPoint(values.before,start,-1);
+    const after = nearPoint(values.after,end,1);
+    const delta = `ΔYc ${values.delta}`;
+    const midX = (start.x+end.x)/2, midY = (start.y+end.y)/2;
+    const halfSpan = Math.min((end.x-start.x)/2, measure.measureText(delta).width/2 + 3);
+    const offset = font + Math.abs(end.y-start.y)*halfSpan/Math.max(1,end.x-start.x);
+    const options = [midY-offset,midY+offset,
+      Math.min(start.y,end.y)-2.6*font,Math.max(start.y,end.y)+2.6*font];
+    const positions = options.map(y=>placed(delta,midX,y));
+    const change = positions.find(p => [before,after].every(other =>
+      Math.abs(p.x-other.x)>p.half+other.half || Math.abs(p.y-other.y)>font+3)) ?? positions[0];
+    const markup = (p,kind,content) =>
+      `<text class="yre-annotation text-small tabular-nums" x="${p.x}" y="${p.y}" dy=".32em" text-anchor="middle" data-yre-annotation="${kind}">${content}</text>`;
+    const deltaLabel = `ΔY<tspan font-size="75%" dy="2.5">c</tspan><tspan dy="-2.5"> ${values.delta}</tspan>`;
+    return `<g aria-hidden="true">${markup(before,'start',values.before)}${markup(after,'end',values.after)}${markup(change,'delta',deltaLabel)}</g>`;
+  }
+
+  function draw() {
+    const width = chart.clientWidth || 680;
+    const g = viewport = viewportFor(width);
+    const group = dataset(), positions = group.positions;
+    const x = t => g.left + (g.right-g.left) * (t-view.x[0]) / length(view.x);
+    const y = v => g.bottom - (g.bottom-g.top) * (v-view.y[0]) / length(view.y);
+    const grid = g.xTicks.map((v,i) => line(x(v),g.top,x(v),g.bottom) +
+      label(x(v),g.bottom+19,g.xText[i],'middle')).join('') +
+      g.yTicks.map((v,i) => line(g.left,y(v),g.right,y(v)) +
+        label(g.left-8,y(v)+4,g.yText[i],'end')).join('');
+    const boundary = group.steadyStart+.5;
+    let divider = '';
+    if (group.steadyStart>0 && view.x[0]<boundary && boundary<view.x[1]) {
+      const at = x(boundary);
+      const caption = 'Steady continuation starts';
+      const toRight = g.right-at > measure.measureText(caption).width+12;
+      const anchor = toRight ? 'start' : 'end';
+      divider = `<line data-yre-branch-divider x1="${at}" y1="${g.top}" x2="${at}" y2="${g.bottom}" stroke="var(--muted-foreground)" stroke-dasharray="4 3" opacity=".55"/>` +
+        label(at+(toRight?8:-8),g.top-9,caption,anchor);
+    }
+    const eventIndex = selectedEvent?.candidate ?? null;
+    const active = comparison()[eventIndex];
+    const step = selectedEvent?.step;
+    const points = step ? [step.start_index,step.end_index].map((j,i) => ({
+      j,x:x(positions[j]),y:y(active.values[j]),
+      outerY:y(active.values[j+(i===0?-1:1)] ?? active.values[j])
+    })) : null;
+    const selected = candidates[eventIndex];
+    const band = points ? `<rect x="${points[0].x}" y="${g.top}" width="${points[1].x-points[0].x}" height="${g.bottom-g.top}" fill="${selected.colour}" fill-opacity=".10" pointer-events="none"/>` : '';
+    const emphasized = hoveredCandidate ?? eventIndex;
+    const seriesOrder = comparison().map((_,i)=>i);
+    if (emphasized !== null) seriesOrder.push(...seriesOrder.splice(emphasized,1));
+    const first = Math.max(0,positions.findIndex(t=>t>=view.x[0])-1);
+    const beyond = positions.findIndex(t=>t>view.x[1]);
+    const last = beyond===-1 ? positions.length : beyond+1;
+    const paths = seriesOrder.map(i => {
+      const values = comparison()[i].values;
+      const {colour,dash} = candidates[i];
+      const coords = values.slice(first,last).map((v,k)=>`${x(positions[first+k]).toFixed(2)},${y(v).toFixed(2)}`).join(' ');
+      const opacity = emphasized===null || emphasized===i ? 1 : .29;
+      return `<polyline data-yre-series="${i}" points="${coords}" fill="none" stroke="${colour}" stroke-width="${emphasized===i?2.5:1.8}" stroke-dasharray="${dash}" opacity="${opacity}"/>`;
+    }).join('');
+    const endpoints = points ? line(points[0].x,points[0].y,points[1].x,points[1].y,selected.colour,3) + points.map((p,i) => {
+        const {j} = p;
+        const source = group.frames[j];
+        const tip = `${selected.name} · ${i===0?'Start':'End'} · ${frameCoordinate(source)} · Yc ${pretty(active.values[j],9)} kg/kg · ${escapeMarkup(source.source_profile)}`;
+        const start = i===0;
+        return `<circle cx="${p.x}" cy="${p.y}" r="4.8" fill="${start?'var(--background)':selected.colour}" stroke="${start?selected.colour:'var(--background)'}" stroke-width="${start?2:1.3}"><title>${tip}</title></circle>`;
+      }).join('') : '';
+    const annotations = step && reversalInView(active,step) ?
+      reversalAnnotations(g,points,reversalValues(active,step)) : '';
+    const xTitle = group.usesSampleOrder ? 'Sample order' : 'Time (ms)';
+    const aria = selected ? `Raw progress variable with the reversal endpoints marked for ${selected.name}` : `Raw progress variable versus ${xTitle}`;
+    const yTitle = label(g.left,15,'Y<tspan font-size="75%" dy="2.5">c</tspan><tspan dy="-2.5"> (kg/kg)</tspan>','start');
+    chart.innerHTML = `<svg class="yre-plot" width="${width}" height="${g.height}" role="img" aria-label="${aria}" data-x-min="${view.x[0]}" data-x-max="${view.x[1]}" data-y-min="${view.y[0]}" data-y-max="${view.y[1]}"><defs><clipPath id="yre-plot-clip"><rect x="${g.left}" y="${g.top}" width="${g.right-g.left}" height="${g.bottom-g.top}"/></clipPath></defs><g aria-hidden="true">${grid}${divider}${yTitle}${label((g.left+g.right)/2,g.height-2,xTitle,'middle')}</g><g clip-path="url(#yre-plot-clip)">${band}${paths}${endpoints}${annotations}</g></svg>`;
+  }
+
+  function updateFocus() {
+    for (const btn of root.querySelectorAll('button[data-yre-event]')) {
+      const selected = Number(btn.dataset.yreEvent)===selectedEvent?.candidate &&
+        Number(btn.dataset.yreFrame)===selectedEvent?.step.start_index;
+      btn.setAttribute('aria-pressed',String(selected));
+    }
+    if (!selectedEvent) {
+      focus.textContent = '';
+      return;
+    }
+    const {candidate,step} = selectedEvent;
+    const {before,after,delta} = reversalValues(comparison()[candidate],step);
+    const frame = step.start_index;
+    const coordinates = dataset().usesSampleOrder ? interval(frame) : `${interval(frame)} ms`;
+    focus.textContent = `${candidates[candidate].rawName}, ${coordinates}. Yc starts at ${before}, ends at ${after}, change ${delta} kilograms per kilogram.`;
+  }
+
+  function reversalInView(series,{start_index,end_index}) {
+    const positions = dataset().positions;
+    const contains = (range, value) => value >= range[0] && value <= range[1];
+    return [start_index,end_index].every(i =>
+      contains(view.x, positions[i]) && contains(view.y, series.values[i]));
+  }
+
+  function clearFocusOutsideView() {
+    if (!selectedEvent) return;
+    const {candidate,step} = selectedEvent;
+    if (reversalInView(comparison()[candidate],step)) return;
+    selectedEvent = null;
+    updateFocus();
+  }
+
+  function resetDomain() {
+    const group = dataset();
+    full = {x:[group.positions[0],group.positions.at(-1)],y:padded(comparison().flatMap(s=>s.values),.045)};
+    view = full;
+  }
+  function animateTo(next, animate) {
+    cancelAnimationFrame(animation);
+    if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      view = next;
+      draw();
+      return;
+    }
+    const origin = view, started = performance.now();
+    function frame(now) {
+      const p = Math.min(1,(now-started)/155);
+      const t = 1-(1-p)**3;
+      view = {x:origin.x.map((v,i)=>v+t*(next.x[i]-v)), y:origin.y.map((v,i)=>v+t*(next.y[i]-v))};
+      if (p === 1) view = next;
+      draw();
+      if (p < 1) animation = requestAnimationFrame(frame);
+    }
+    animation = requestAnimationFrame(frame);
+  }
+  function goTo(candidate,frame,animate=true) {
+    const s = comparison()[candidate], positions = dataset().positions;
+    const step = s.steps.find(step=>step.start_index===frame);
+    selectedEvent = {candidate,step};
+    const indices = [step.start_index,step.end_index];
+    const xPair = indices.map(i=>positions[i]);
+    const valuePair = indices.map(i=>s.values[i]);
+    const window = {
+      x:constrain(padded(xPair,.8),full.x),
+      y:constrain(padded(valuePair,.5),full.y)
+    };
+    updateFocus();
+    animateTo(window,animate);
+  }
+
+  function stepButton(candidate,frame,summary) {
+    const text = interval(frame);
+    const unit = dataset().usesSampleOrder ? '' : ' ms';
+    if (summary && comparison()[candidate].steps.length>1) {
+      return `<button type="button" class="yre-interval cursor-interaction" data-yre-expand="${candidate}" data-yre-largest popovertarget="yre-step-popover" aria-expanded="false"><span>${text}</span><span class="sr-only">${unit}, largest reversal for ${candidates[candidate].name}. Open reversal intervals.</span><svg class="yre-interval-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>`;
+    }
+    const style = summary ? 'yre-interval' : 'yre-step-option';
+    const label = `${candidates[candidate].name}, ${summary?'largest reversal, ':''}${text}${unit}`;
+    return `<button type="button" class="${style} cursor-interaction" data-yre-event="${candidate}" data-yre-frame="${frame}" aria-label="${label}" aria-pressed="false"${summary?' data-yre-largest':''}>${text}</button>`;
+  }
+
+  function positionSteps() {
+    if (!openTrigger || !stepPopover.matches(':popover-open')) return;
+    const bounds = openTrigger.getBoundingClientRect();
+    const {offsetWidth:width,offsetHeight:height} = stepPopover;
+    const below = bounds.bottom + 6, above = bounds.top - height - 6;
+    const x = Math.min(Math.max(8,bounds.right-width), Math.max(8,innerWidth-width-8));
+    const y = below+height+8<=innerHeight ? below : Math.max(8,above);
+    stepPopover.style.left = `${x+scrollX}px`;
+    stepPopover.style.top = `${y+scrollY}px`;
+  }
+
+  function showSteps(trigger,focusOption) {
+    if (stepPopover.matches(':popover-open')) {
+      const sameTrigger = openTrigger===trigger;
+      stepPopover.hidePopover();
+      if (sameTrigger) return;
+    }
+    const candidate = Number(trigger.dataset.yreExpand);
+    openTrigger = trigger;
+    stepList.innerHTML = comparison()[candidate].steps.map(step=>stepButton(candidate,step.start_index,false)).join('');
+    stepPopover.setAttribute('aria-label',`Reversal steps for ${candidates[candidate].rawName}`);
+    updateFocus();
+    trigger.setAttribute('aria-expanded','true');
+    stepPopover.showPopover({source:trigger});
+    positionSteps();
+    const item = stepList.querySelector('[aria-pressed="true"]') ?? stepList.firstElementChild;
+    if (focusOption) item.focus({preventScroll:true});
+    const list = stepList.getBoundingClientRect();
+    const entry = item.getBoundingClientRect();
+    stepList.scrollTop += Math.max(0,entry.bottom-list.bottom);
+  }
+
+  function refresh() {
+    stepPopover.hidePopover();
+    stepList.replaceChildren();
+    cancelAnimationFrame(animation);
+    hoveredCandidate = null;
+    updateCaseReadout();
+    const group = dataset();
+    for (const heading of root.querySelectorAll('[data-yre-interval-heading]')) {
+      heading.innerHTML = group.usesSampleOrder ? 'Reversal interval' :
+        'Time interval <span class="text-small text-muted">(ms)</span>';
+    }
+    for (const btn of zChoices.querySelectorAll('button')) {
+      btn.setAttribute('aria-pressed',String(Number(btn.dataset.yreZIndex)===zIndex));
+    }
+    const stats = comparison();
+    const intervalWidth = Math.max(12.5, ...stats.filter(s=>s.worst!==null).map(s=>interval(s.worst).length+(s.steps.length>1?4.2:1.5)));
+    rows.style.setProperty('--yre-interval-width', `${intervalWidth}ch`);
+    rows.innerHTML = stats.map((s,i) => {
+      const candidate = candidates[i];
+      const event = s.worst!==null ? stepButton(i,s.worst,true) :
+        '<span class="text-muted">No reversals</span>';
+      return `<tr><th scope="row" data-yre-candidate="${i}">${key(candidate)}</th><td class="text-end tabular-nums">${s.steps.length} / ${group.frames.length-1}</td><td class="text-end tabular-nums">${ratio(s.max_relative)}</td><td class="text-center tabular-nums">${event}</td><td class="text-end tabular-nums">${pretty(s.span,4)}</td></tr>`;
+    }).join('');
+    resetDomain();
+    if (selectedEvent) goTo(selectedEvent.candidate,selectedEvent.step.start_index,false);
+    else {
+      updateFocus();
+      draw();
+    }
+  }
+
+  function zoom(factor, fx=.5, fy=.5) {
+    function axis(range,bounds,anchor) {
+      const span = Math.max(length(bounds)*1e-8,length(range)*factor);
+      const lo = range[0] + (length(range)-span)*anchor;
+      return constrain([lo,lo+span],bounds);
+    }
+    cancelAnimationFrame(animation);
+    view = {x:axis(view.x,full.x,fx),y:axis(view.y,full.y,fy)};
+    clearFocusOutsideView();
+    draw();
+  }
+  function plotPosition(e) {
+    const rect = chart.getBoundingClientRect();
+    const px=e.clientX-rect.left, py=e.clientY-rect.top;
+    return {inside:px>=viewport.left && px<=viewport.right && py>=viewport.top && py<=viewport.bottom,
+      fx:(px-viewport.left)/(viewport.right-viewport.left),fy:(viewport.bottom-py)/(viewport.bottom-viewport.top)};
+  }
+  chart.addEventListener('wheel', e => {
+    const p = plotPosition(e);
+    if (!p.inside) return;
+    e.preventDefault();
+    zoom(e.deltaY < 0 ? .84 : 1/.84,p.fx,p.fy);
+  },{passive:false});
+  chart.addEventListener('pointerdown',e => {
+    if (e.button!==0 || !plotPosition(e).inside) return;
+    cancelAnimationFrame(animation);
+    pointer = {id:e.pointerId,x:e.clientX,y:e.clientY,view,
+      width:viewport.right-viewport.left,height:viewport.bottom-viewport.top};
+    chart.setPointerCapture(e.pointerId);
+    chart.setAttribute('data-panning','');
+  });
+  chart.addEventListener('pointermove',e => {
+    if (!pointer || pointer.id!==e.pointerId) return;
+    const dx = (e.clientX-pointer.x)*length(pointer.view.x)/pointer.width;
+    const dy = (e.clientY-pointer.y)*length(pointer.view.y)/pointer.height;
+    view = {x:constrain(pointer.view.x.map(v=>v-dx),full.x), y:constrain(pointer.view.y.map(v=>v+dy),full.y)};
+    draw();
+  });
+  for (const name of ['pointerup','pointercancel','lostpointercapture']) {
+    chart.addEventListener(name,e => {
+      if (!pointer || pointer.id!==e.pointerId) return;
+      pointer = null;
+      chart.removeAttribute('data-panning');
+      clearFocusOutsideView();
+      draw();
+    });
+  }
+
+  choose.replaceChildren(...data.cases.map((item,i) => new Option(`${item.case_name} · ${item.steps.join(' → ')}`,String(i))));
+  zChoices.innerHTML = data.inputs.z.map((point,i) => {
+    const rounded = point.value.toFixed(3);
+    const needsPrecision = Number(rounded)===0 || Number(rounded)===1 ||
+      data.inputs.z.some(z=>z!==point && z.value.toFixed(3)===rounded);
+    const valueLabel = needsPrecision ? String(point.value) : rounded;
+    const marker = point.is_stoichiometric ? ' (Z<sub>st</sub>)' : '';
+    return `<button type="button" class="btn tabular-nums" data-yre-z-index="${i}" title="Z = ${point.value}" aria-pressed="false"><span>${valueLabel}${marker}</span></button>`;
+  }).join('');
+  choose.addEventListener('change',()=>{
+    selectedEvent=null;refresh();
+  });
+  zChoices.addEventListener('click',e => {
+    const button = e.target.closest('button[data-yre-z-index]');
+    if (button && Number(button.dataset.yreZIndex)!==zIndex) {
+      zIndex=Number(button.dataset.yreZIndex);
+      selectedEvent=null;refresh();
+    }
+  });
+  rows.addEventListener('click',e => {
+    const toggle = e.target.closest('button[data-yre-expand]');
+    if (toggle) {
+      e.preventDefault();
+      showSteps(toggle,e.detail===0);
+      return;
+    }
+    const button = e.target.closest('button[data-yre-event]');
+    if (button) {
+      goTo(Number(button.dataset.yreEvent),Number(button.dataset.yreFrame));
+    }
+  });
+  stepList.addEventListener('click',e => {
+    const button = e.target.closest('button[data-yre-event]');
+    if (!button) return;
+    const trigger = openTrigger;
+    stepPopover.hidePopover();
+    trigger?.focus({preventScroll:true});
+    goTo(Number(button.dataset.yreEvent),Number(button.dataset.yreFrame));
+  });
+  stepList.addEventListener('keydown',e => {
+    const next = e.key==='ArrowDown' ? e.target.nextElementSibling :
+      e.key==='ArrowUp' ? e.target.previousElementSibling : null;
+    if (!next) return;
+    e.preventDefault();
+    next.focus();
+  });
+  stepPopover.addEventListener('beforetoggle',e => {
+    if (e.newState==='closed') {
+      openTrigger?.setAttribute('aria-expanded','false');
+      openTrigger = null;
+    }
+  });
+  window.addEventListener('scroll',positionSteps,{passive:true});
+  window.addEventListener('resize',positionSteps);
+  for (const cell of ['pointerover','pointerout']) {
+    rows.addEventListener(cell,e => {
+      const candidate = e.target.closest('[data-yre-candidate]');
+      if (!candidate || candidate.contains(e.relatedTarget)) return;
+      hoveredCandidate = cell==='pointerover' ? Number(candidate.dataset.yreCandidate) : null;
+      draw();
+    });
+  }
+  for (const button of root.querySelectorAll('[data-yre-zoom]')) {
+    button.addEventListener('click',()=>zoom(Number(button.dataset.yreZoom)));
+  }
+  find('[data-yre-reset]').addEventListener('click',()=>{selectedEvent=null;updateFocus();animateTo(full,true);});
+  refresh();
+  new ResizeObserver(()=>{updateCaseReadout();draw();}).observe(chart);
+})();
+</script>
+
+</body>
+</html>

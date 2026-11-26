@@ -1,0 +1,61 @@
+.icon-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.icon-button[aria-expanded="true"] {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.icon-button[aria-expanded="true"]:hover:not(:disabled) {
+  background: var(--n-200);
+}
+
+.icon-button:disabled,
+.icon-button:disabled:hover {
+  background: transparent;
+  color: var(--text-faint);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.icon-button-icon {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.icon-button--compact {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.icon-button--compact .icon-button-icon {
+  width: 14px;
+  height: 14px;
+}

@@ -1,0 +1,85 @@
+.tree-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 188px;
+  max-height: calc(100vh - 16px);
+  padding: 5px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pop);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-pop);
+  scrollbar-width: thin;
+  scrollbar-color: var(--n-250) transparent;
+}
+
+.tree-menu-item {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.tree-menu-item:hover,
+.tree-menu-item:focus-visible {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tree-menu-item:hover {
+  outline: none;
+}
+
+.tree-menu-item:active {
+  background: var(--bg-active);
+}
+
+.tree-menu-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.tree-menu-item:disabled,
+.tree-menu-item:disabled:hover {
+  background: transparent;
+  color: var(--text-faint);
+  opacity: 1;
+  cursor: default;
+}
+
+.tree-menu-item--danger {
+  color: var(--danger);
+}
+
+.tree-menu-item--danger:hover,
+.tree-menu-item--danger:focus-visible {
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+}
+
+.tree-menu-item--danger:active {
+  background: var(--danger-soft-2);
+}
+
+.tree-menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--line-soft);
+}

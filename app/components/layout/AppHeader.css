@@ -1,0 +1,101 @@
+.app-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-page);
+}
+
+/*
+ * Windows Window Controls Overlay (WCO) integration. The app header becomes
+ * the title bar; native controls occupy the right edge and are excluded from
+ * env(titlebar-area-width). Runtime geometry comes from Chromium/WCO, not a
+ * fixed control width or a single-DPI assumption.
+ */
+html[data-desktop-shell='true'] .app-header {
+  -webkit-app-region: drag;
+  padding-left: calc(14px + env(titlebar-area-x, 0px));
+  padding-right: calc(
+    14px + 100vw - env(titlebar-area-x, 0px) -
+      env(titlebar-area-width, 100vw)
+  );
+}
+
+html[data-desktop-shell='true'] .app-menu,
+html[data-desktop-shell='true'] .app-menu *,
+html[data-desktop-shell='true'] .header-actions,
+html[data-desktop-shell='true'] .header-actions * {
+  -webkit-app-region: no-drag;
+}
+
+.app-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+}
+
+.app-name {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.app-menu-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  margin-left: -7px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+.app-menu-button:hover {
+  background: var(--bg-hover);
+}
+
+.app-menu-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.app-logo {
+  display: block;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  object-fit: contain;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.app-menu-list {
+  min-width: 188px;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 var(--space-4);
+  }
+}

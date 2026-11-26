@@ -1,0 +1,10 @@
+.tab-close-dialog .modal-error {
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.6;
+}

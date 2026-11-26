@@ -1,0 +1,94 @@
+:root {
+  /* neutral ramp: warm-neutral surfaces, canvas stays pure white */
+  --n-25: #fdfcfa;
+  --n-50: #faf9f7;
+  --n-100: #f6f4f1;
+  --n-150: #efede9;
+  --n-200: #e7e4df;
+  --n-250: #dad5ce;
+  --n-350: #c6c0b7;
+  --n-400: #b5afa6;
+  --n-500: #a09a91;
+  --n-600: #746f66;
+  --n-700: #57524a;
+  --n-800: #49443d;
+  --n-900: #302c27;
+  --n-950: #191714;
+
+  /* brand: low-saturation terracotta, single signal colour */
+  --brand: #b5542c;
+  --brand-hover: #9d4522;
+  --brand-active: #853919;
+  --brand-soft: #fbeee8;
+  --brand-soft-2: #f6e2d7;
+  --brand-line: #eed3c5;
+  --brand-ink: #8f3b1b;
+  --on-brand: #ffffff;
+  --focus: #b5542c;
+
+  /* semantic states stay outside the brand hue */
+  --success: #15803d;
+  --success-dot: #15803d;
+  --success-soft: #f0fdf4;
+  --success-line: #bbf7d0;
+  --warning: #8a6100;
+  --warning-ink: #6d4a00;
+  --warning-dot: #a16207;
+  --warning-soft: #fdf6e4;
+  --warning-line: #e3cf9a;
+  --warning-border: #e3cf9a;
+  --danger: #b42318;
+  --danger-strong: #d92d20;
+  --danger-ink: #8a2320;
+  --danger-soft: #fef3f2;
+  --danger-soft-2: #fee2e2;
+  --danger-line: #fecdca;
+  --danger-border: #f4a9a4;
+
+  /* roles */
+  --bg-page: #ffffff;
+  --bg-panel: var(--n-50);
+  --bg-raised: #ffffff;
+  --bg-hover: var(--n-100);
+  --bg-active: var(--n-150);
+  --line: var(--n-200);
+  --line-soft: var(--n-150);
+  --line-strong: #9b9489;
+  --splitter-wash: rgba(25, 23, 20, 0.04);
+  --text: var(--n-950);
+  --text-muted: var(--n-700);
+  --text-faint: var(--n-600);
+  --font-ui: "Geist", "Geist Sans", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", "PingFang SC", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geist Mono", "Cascadia Code", "Cascadia Mono", "Consolas", "Source Code Pro", ui-monospace, monospace;
+  --header-height: 52px;
+  --status-height: 26px;
+  --left-width: 240px;
+  --right-width: 360px;
+  --splitter-width: 1px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --radius-sm: 5px;
+  --radius-control: 6px;
+  --radius-md: 7px;
+  --radius-pop: 8px;
+  --shadow-xs: 0 1px 2px rgba(25, 23, 20, 0.05);
+  --shadow-sm: 0 1px 3px rgba(25, 23, 20, 0.07), 0 1px 2px rgba(25, 23, 20, 0.04);
+  --shadow-pop: 0 12px 32px -12px rgba(25, 23, 20, 0.18), 0 2px 8px rgba(25, 23, 20, 0.05);
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --left-width: 200px;
+    --right-width: 320px;
+  }
+}
+
+@media (max-width: 880px) {
+  :root {
+    --left-width: 180px;
+    --right-width: 300px;
+  }
+}

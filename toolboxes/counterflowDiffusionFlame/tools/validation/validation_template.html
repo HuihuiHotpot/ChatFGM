@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FGM Table Validation</title>
+<style>
+  :root {
+    color-scheme: light;
+    font: 14px/1.45 'Segoe UI', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    --ink: #192b3d;
+    --muted: #556778;
+    --line: #dce4eb;
+    --grid: #e7edf2;
+    --surface: #f5f8fb;
+    --blue: #225eb3;
+    --blue-wash: #edf4ff;
+    --lookup: #b85c22;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: #fff; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  ::selection { background: #dceaff; }
+  .report {
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    max-width: 1440px;
+    height: 100vh;
+    min-height: 580px;
+    margin-inline: auto;
+    padding: 24px clamp(24px, 3vw, 44px) 14px;
+  }
+  h1, h2, p { margin: 0; }
+  h1 { font-size: 27px; letter-spacing: -.022em; font-weight: 600; }
+  h2 { font-size: 21px; letter-spacing: -.015em; font-weight: 600; }
+  .context {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 18px;
+    padding: 11px 15px 12px;
+    margin: 15px 0 8px;
+    border-radius: 9px;
+    background: var(--surface);
+  }
+  .field { display: grid; gap: 4px; min-width: 0; }
+  .field > span { font-size: 13px; color: var(--muted); }
+  .profile-label { display: flex; justify-content: space-between; gap: 8px; }
+  select, .control, .search, .icon-button {
+    border: 1px solid #ccd7e1;
+    border-radius: 7px;
+    min-height: 34px;
+    background: #fff;
+  }
+  select { padding: 4px 9px 4px 10px; min-width: 0; max-width: 100%; }
+  select:hover, .control:hover, .icon-button:hover { border-color: #93abc2; background: var(--surface); }
+  .view-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    box-shadow: inset 0 -1px var(--line);
+  }
+  .tabs, .legend { display: flex; align-items: center; }
+  .tabs { gap: 24px; }
+  .tab {
+    padding: 10px 2px 11px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .tab[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab:hover { color: var(--blue); }
+  .legend { gap: 19px; white-space: nowrap; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 23px; border-top: 2px solid var(--blue); }
+  .legend .lookup-key { border-top: 2px dashed var(--lookup); }
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(370px, .88fr) minmax(0, 1.12fr);
+    min-height: 0;
+  }
+  .workspace.single { grid-template-columns: minmax(0, 1fr); }
+  .catalog {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    min-height: 0;
+    min-width: 0;
+    padding: 14px 16px 0 0;
+    border-right: 1px solid var(--line);
+  }
+  .catalog:has(.filters[hidden]) { grid-template-rows: auto minmax(0, 1fr); }
+  .filters { display: grid; grid-template-columns: minmax(110px, 1fr) auto auto; gap: 7px; align-items: center; }
+  .search { display: flex; align-items: center; gap: 8px; padding: 0 9px; min-width: 0; }
+  .search:focus-within { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; }
+  .search input::placeholder { color: var(--muted); }
+  svg.icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+  .control { display: inline-flex; align-items: center; gap: 6px; justify-content: center; padding: 0 9px; white-space: nowrap; }
+  .control[aria-expanded="true"] { border-color: #92b1d9; color: var(--blue); }
+  .picker { position: relative; }
+  .picker-menu { position: absolute; z-index: 2; top: calc(100% + 6px); left: 0; width: 254px; padding: 9px; border-radius: 10px; background: #fff; box-shadow: 0 6px 26px #192b3d29; }
+  .picker-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 1px 5px 7px; font-size: 13px; }
+  .text-button { border: 0; background: transparent; color: var(--blue); padding: 3px; }
+  .text-button:hover { text-decoration: underline; text-underline-offset: .2em; }
+  .text-button:disabled { color: var(--muted); cursor: default; text-decoration: none; }
+  .picker-list { display: grid; grid-template-columns: repeat(2, 1fr); max-height: 245px; overflow-y: auto; }
+  .choice { padding: 5px; display: flex; align-items: center; gap: 6px; border-radius: 5px; cursor: pointer; }
+  .choice:hover { background: var(--surface); }
+  .choice input { accent-color: var(--blue); }
+  .catalog-caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 9px 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .gallery-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #a7b8c9 transparent;
+    padding: 3px 7px 0 2px;
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 13px;
+    align-items: stretch;
+  }
+  .tile {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 6px;
+    min-width: 0;
+    padding: 8px 8px 4px;
+    background: #fff;
+    text-align: left;
+  }
+  .tile:focus-visible { outline-offset: -2px; }
+  .tile:hover { background: var(--surface); }
+  .tile[aria-pressed="true"] { background: var(--blue-wash); box-shadow: inset 0 0 0 1px #a5bfde; border-bottom-color: transparent; }
+  .tile-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 6px; }
+  .tile-name { font-size: 14px; }
+  .tile[aria-pressed="true"] .tile-name { color: var(--blue); }
+  .metric { font-size: 13px; white-space: nowrap; }
+  .unit { color: var(--muted); font-size: 13px; }
+  .chart { display: block; width: 100%; height: auto; overflow: hidden; }
+  .chart text { fill: var(--muted); font: 13px 'Segoe UI', system-ui, sans-serif; }
+  .tile .chart text { font-size: 11px; }
+  .plot-grid { stroke: var(--grid); }
+  .plot-edge { stroke: #cbd7e0; }
+  .line-ref, .line-lookup, .line-delta { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .line-ref { stroke: var(--blue); stroke-width: 1.7; }
+  .line-lookup { stroke: var(--lookup); stroke-width: 1.7; stroke-dasharray: 5 4; }
+  .line-delta { stroke: #576e88; stroke-width: 1.6; }
+  .plot-zero { stroke: #879bb0; stroke-dasharray: 3 4; }
+  .cursor-line { stroke: #839bb4; stroke-dasharray: 3 3; }
+  .cursor-ref { fill: var(--blue); }
+  .cursor-lookup { fill: var(--lookup); }
+  .cursor-delta { fill: #465f7a; }
+  .cursor-ref, .cursor-lookup, .cursor-delta { stroke: #fff; stroke-width: 1.5; }
+  .inspector { min-width: 0; align-self: start; padding: 13px 0 0 22px; }
+  .workspace.single .inspector { width: min(100%, 900px); margin-inline: auto; padding-inline: 0; }
+  .detail-head, .detail-title, .tools { display: flex; align-items: center; gap: 9px; }
+  .detail-head { justify-content: space-between; gap: 12px; }
+  .tools { gap: 5px; }
+  .icon-button { min-height: 31px; width: 33px; display: inline-grid; place-items: center; padding: 0; }
+  .icon-button:disabled { color: #8996a4; border-color: var(--line); cursor: default; background: #fff; }
+  .readings {
+    display: grid;
+    grid-template-columns: .65fr 1fr 1fr 1fr;
+    gap: 8px 12px;
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 7px;
+    background: var(--surface);
+  }
+  .readings span { display: grid; gap: 2px; font-size: 13px; }
+  .readings output { font-size: 15px; }
+  .plot-area { cursor: crosshair; touch-action: none; user-select: none; }
+  .plot-area[data-dragging] { cursor: grabbing; }
+  .residual-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 10px 0 6px;
+    font-size: 14px;
+  }
+  .residual-label { padding-bottom: 3px; }
+  .error-summary { display: flex; flex-wrap: wrap; gap: 8px 0; margin: 0 0 0 auto; }
+  .error-summary > div + div { margin-left: 17px; padding-left: 17px; border-left: 1px solid var(--line); }
+  .error-summary dt { font-size: 13px; color: var(--muted); }
+  .error-summary dd { display: flex; align-items: center; gap: 9px; min-height: 27px; margin: 2px 0 0; font-size: 16px; }
+  .peak-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--blue);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .peak-button:hover { border-color: #93abc2; background: var(--blue-wash); }
+  .peak-button .icon { width: 13px; height: 13px; }
+  .empty { grid-column: 1 / -1; padding: 24px 8px; color: var(--muted); }
+  @media (max-height: 820px) {
+    .report { padding-top: 17px; }
+    .context { margin-top: 10px; }
+    .inspector { padding-top: 9px; }
+    .readings { margin-block: 7px; }
+    .residual-head { margin-top: 7px; }
+    .workspace.single .inspector { width: min(100%, 675px); }
+  }
+  @media (max-width: 1140px) {
+    .filters { grid-template-columns: minmax(0, 1fr) auto; }
+    .filters #sort { grid-column: 1 / -1; justify-self: end; }
+  }
+  @media (max-width: 1030px) {
+    .report { padding-inline: 20px; }
+    .workspace { grid-template-columns: minmax(350px, .95fr) minmax(0, 1.05fr); }
+    .catalog { padding-right: 11px; }
+    .inspector { padding-left: 13px; }
+  }
+</style>
+</head>
+<body>
+<main class="report">
+  <header><h1>FGM Table Validation</h1></header>
+  <div class="context">
+    <label class="field"><span>Case</span><select id="case"></select></label>
+    <label class="field"><span class="profile-label">Reference profile <span id="clip-summary" hidden></span></span><select id="profile"></select></label>
+  </div>
+  <div class="view-bar">
+    <div class="tabs" role="tablist" aria-label="Output variables">
+      <button type="button" class="tab" id="tab-species" role="tab" aria-controls="output-panel" data-group="species">Species mass fractions</button>
+      <button type="button" class="tab" id="tab-sources" role="tab" aria-controls="output-panel" data-group="sources">Source terms</button>
+      <button type="button" class="tab" id="tab-other" role="tab" aria-controls="output-panel" data-group="other">Other outputs</button>
+    </div>
+    <div class="legend" aria-label="Curve legend"><span><i></i>Reference</span><span><i class="lookup-key"></i>Table lookup</span></div>
+  </div>
+  <section class="workspace" role="tabpanel" id="output-panel">
+    <div class="catalog" id="catalog">
+      <div class="filters" id="filters">
+        <label class="search" id="search-box"><input type="search" id="search" aria-label="Find a species" placeholder="Find a species"></label>
+        <div class="picker" id="picker">
+          <button class="control" type="button" id="pick-button" aria-expanded="false" aria-controls="pick-menu"><span>Select species</span></button>
+          <div class="picker-menu" id="pick-menu" hidden>
+            <div class="picker-title"><span>Species to display</span><button type="button" class="text-button" id="clear-species">Show all</button></div>
+            <div class="picker-list" id="pick-list"></div>
+          </div>
+        </div>
+        <select id="sort" aria-label="Sort species">
+          <option value="species">Species order</option>
+          <option value="absolute">Max. absolute error</option>
+          <option value="active">Active-zone normalized MAE (%)</option>
+        </select>
+      </div>
+      <div class="catalog-caption">
+        <span id="variable-count"></span>
+        <span id="metric-label"></span>
+      </div>
+      <div class="gallery-scroll" id="gallery-scroll">
+        <div class="gallery" id="gallery" role="group" aria-label="Variable previews"></div>
+      </div>
+    </div>
+    <div class="inspector" id="inspector"></div>
+  </section>
+</main>
+<script type="application/json" id="validation-data">__FGM_VALIDATION_DATA__</script>
+<script>
+  'use strict';
+  const byId = id => document.getElementById(id);
+  const icons = {
+    search: '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4.5 4.5"/>',
+    down: '<path d="m6 9 6 6 6-6"/>',
+    plus: '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 4.5 4.5M8 10.5h5m-2.5-2.5v5"/>',
+    minus: '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 4.5 4.5M8 10.5h5"/>',
+    reset: '<path d="M5 10a7 7 0 1 1 1.8 6.8M5 5v5h5"/>',
+    locate: '<circle cx="12" cy="12" r="5"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/>'
+  };
+  const icon = name => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + icons[name] + '</svg>';
+  byId('search-box').insertAdjacentHTML('afterbegin', icon('search'));
+  byId('pick-button').insertAdjacentHTML('beforeend', icon('down'));
+
+  const subscripts = '₀₁₂₃₄₅₆₇₈₉';
+  const chemical = name => name.replace(/\d/g, digit => subscripts[Number(digit)]);
+  const cases = JSON.parse(byId('validation-data').textContent).cases;
+
+  const state = { group: 'species', selected: new Set(), detail: null, start: 0, end: 1, cursor: null };
+  const pickList = byId('pick-list');
+  const gallery = byId('gallery');
+  const inspector = byId('inspector');
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  let curves = new Map();
+  let groups;
+  let zGrid;
+  let plotZ;
+  let clipSequence = 0;
+
+  function options(select, labels) {
+    select.replaceChildren(...labels.map((label, index) => new Option(label, String(index))));
+  }
+
+  function changeCase() {
+    const condition = cases[Number(byId('case').value)];
+    options(byId('profile'), condition.profiles.map(profile => profile.sample.split('/').at(-1).replace('__', ' · ')));
+    changeProfile();
+  }
+
+  function changeProfile() {
+    const condition = cases[Number(byId('case').value)];
+    const profile = condition.profiles[Number(byId('profile').value)];
+    zGrid = profile.z;
+    plotZ = profile.z_lookup;
+    byId('profile').title = profile.source_profile;
+    const clipping = byId('clip-summary');
+    const clippedAxes = [];
+    if (profile.z_clipped_count) clippedAxes.push('Z ' + profile.z_clipped_count);
+    if (profile.c.clipped_count) clippedAxes.push('C ' + profile.c.clipped_count);
+    clipping.hidden = clippedAxes.length === 0;
+    clipping.textContent = 'Clipped points · ' + clippedAxes.join(' · ');
+    groups = {species: [], sources: [], other: []};
+    curves = new Map();
+    for (const data of profile.variables) {
+      const key = JSON.stringify([data.field, data.name, data.component]);
+      const variable = {
+        key, name: data.name, unit: data.unit,
+        label: data.category === 'species' ? chemical(data.name) : data.field === 'omega_Yc' ? 'Progress-variable source' : data.name
+      };
+      groups[data.category].push(variable);
+      curves.set(key, {...data, variable});
+    }
+    if (!groups[state.group].length) state.group = tabs.find(tab => groups[tab.dataset.group].length).dataset.group;
+    for (const key of state.selected) {
+      if (!curves.has(key)) state.selected.delete(key);
+    }
+    populateSpecies();
+    updateSelection();
+    resetView();
+    render();
+  }
+
+  function escaped(value) {
+    return value.replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[char]);
+  }
+
+  function number(value, digits = 3) {
+    if (value === 0) return '0';
+    if (Math.abs(value) < .01 || Math.abs(value) >= 1e4) return value.toExponential(digits - 1).replace(/\.?0+e/, 'e').replace('e+', 'e');
+    return String(Number(value.toPrecision(digits)));
+  }
+
+  function ticks(low, high, target) {
+    const raw = (high - low) / target;
+    const magnitude = 10 ** Math.floor(Math.log10(raw));
+    const unit = [1, 2, 2.5, 5, 10].find(step => step * magnitude >= raw - magnitude * 1e-10) * magnitude;
+    const first = Math.floor(low / unit + 1e-9);
+    const last = Math.ceil(high / unit - 1e-9);
+    return Array.from({ length: last - first + 1 }, (_, index) => Number(((first + index) * unit).toPrecision(10)));
+  }
+
+  function chart(data, mode) {
+    const mini = mode === 'mini';
+    const difference = mode === 'delta';
+    const width = mini ? 266 : 680;
+    const height = mini ? 89 : difference ? 150 : 258;
+    const left = mini ? 44 : 63;
+    const right = width - (mini ? 8 : 16);
+    const top = 9;
+    const bottom = height - (mini ? 17 : difference ? 36 : 10);
+    const start = mini ? 0 : state.start;
+    const end = mini ? 1 : state.end;
+    // Keep the endpoints of every native segment that intersects the visible Z range.
+    let firstIndex = 0;
+    let endIndex = plotZ.length - 1;
+    if (start > 0 || end < 1) {
+      const intersects = index => Math.max(plotZ[index], plotZ[index + 1]) >= start
+        && Math.min(plotZ[index], plotZ[index + 1]) <= end;
+      while (firstIndex + 1 < endIndex && !intersects(firstIndex)) firstIndex++;
+      while (endIndex - 1 > firstIndex && !intersects(endIndex - 1)) endIndex--;
+    }
+    const series = difference ? [data.residual] : [data.reference, data.lookup];
+    const values = series.flatMap(line => line.slice(firstIndex, endIndex + 1));
+    let low = Math.min(...values);
+    let high = Math.max(...values);
+    if (difference) {
+      high = Math.max(Math.abs(low), Math.abs(high));
+      low = -high;
+    }
+    if (low === high) {
+      const padding = Math.max(Math.abs(low) * .1, .0001);
+      low -= padding;
+      high += padding;
+    }
+    const yTicks = ticks(low, high, mini ? 2 : 4);
+    const yMin = yTicks[0];
+    const yMax = yTicks.at(-1);
+    const x = z => left + (z - start) / (end - start) * (right - left);
+    const y = value => bottom - (value - yMin) / (yMax - yMin) * (bottom - top);
+    const xCount = mini ? 2 : 5;
+    const yGrid = yTicks.map(value => '<line class="plot-grid" x1="' + left + '" x2="' + right + '" y1="' + y(value) + '" y2="' + y(value) + '"/><text x="' + (left - 7) + '" y="' + y(value) + '" dy=".34em" text-anchor="end">' + number(value, 2) + '</text>').join('');
+    const xGrid = Array.from({ length: xCount + 1 }, (_, index) => {
+      const z = start + (end - start) * index / xCount;
+      const px = x(z);
+      const label = mode === 'large' ? '' : '<text x="' + px + '" y="' + (bottom + (mini ? 13 : 16)) + '" text-anchor="middle">' + Number(z.toFixed(3)) + '</text>';
+      return '<line class="plot-grid" x1="' + px + '" x2="' + px + '" y1="' + top + '" y2="' + bottom + '"/>' + label;
+    }).join('');
+    const path = (line, className) => {
+      const points = line.slice(firstIndex, endIndex + 1).map((value, index) => x(plotZ[firstIndex + index]).toFixed(2) + ' ' + y(value).toFixed(2));
+      return '<path class="' + className + '" d="M' + points.join('L') + '"/>';
+    };
+    const id = 'plot-clip-' + (++clipSequence);
+    const clip = '<defs><clipPath id="' + id + '"><rect x="' + left + '" y="' + (top - 2) + '" width="' + (right - left) + '" height="' + (bottom - top + 4) + '"/></clipPath></defs>';
+    const zero = difference ? '<line class="plot-zero" x1="' + left + '" x2="' + right + '" y1="' + y(0) + '" y2="' + y(0) + '"/>' : '';
+    const graph = difference ? path(data.residual, 'line-delta') : path(data.reference, 'line-ref') + path(data.lookup, 'line-lookup');
+    const cursor = mini ? '' : '<g data-cursor></g>';
+    const zLabel = difference ? '<text x="' + ((left + right) / 2) + '" y="' + (height - 2) + '" text-anchor="middle">Mixture fraction Z</text>' : '';
+    const svg = '<svg class="chart" viewBox="0 0 ' + width + ' ' + height + '" aria-hidden="true">'
+      + clip + yGrid + xGrid + '<path class="plot-edge" fill="none" d="M' + left + ' ' + top + 'V' + bottom + 'H' + right + '"/>'
+      + '<g clip-path="url(#' + id + ')">' + zero + graph + cursor + '</g>' + zLabel + '</svg>';
+    return { svg, x, y, width, left, right, top, bottom, difference };
+  }
+
+  function formatMetric(data, mode) {
+    if (mode === 'active') {
+      return data.active_zone_nmae_percent === null ? '—' : number(data.active_zone_nmae_percent) + '%';
+    }
+    return number(data.max_absolute_error);
+  }
+
+  function tile(data, isSpecies, metricMode) {
+    const { variable } = data;
+    const button = document.createElement('button');
+    const metric = formatMetric(data, metricMode);
+    const unit = isSpecies ? '' : ' <span class="unit">' + escaped(variable.unit) + '</span>';
+    button.type = 'button';
+    button.className = 'tile';
+    button.dataset.variable = variable.key;
+    button.setAttribute('aria-pressed', String(state.detail === variable.key));
+    button.setAttribute('aria-controls', 'inspector');
+    button.setAttribute('aria-label', variable.label + ', ' + byId('metric-label').textContent + ' ' + metric);
+    button.innerHTML = '<span class="tile-head"><span class="tile-name">' + escaped(variable.label) + unit + '</span>'
+      + '<span class="metric">' + metric + '</span></span>' + chart(data, 'mini').svg;
+    return button;
+  }
+
+  function resetView() {
+    state.start = 0;
+    state.end = 1;
+    state.cursor = null;
+  }
+
+  function zoom(factor, center) {
+    const width = state.end - state.start;
+    const next = Math.min(1, Math.max(.035, width * factor));
+    const ratio = (center - state.start) / width;
+    state.start = Math.min(1 - next, Math.max(0, center - ratio * next));
+    state.end = state.start + next;
+  }
+
+  function toolButton(name, label) {
+    return '<button type="button" class="icon-button" data-tool="' + name + '" aria-label="' + label + '" title="' + label + '">' + icon(name) + '</button>';
+  }
+
+  function detailPanel(data) {
+    const { variable } = data;
+    const peakZ = 'Z ' + data.max_error_z.toFixed(3);
+    const panel = document.createElement('section');
+    panel.id = 'detail';
+    panel.setAttribute('aria-labelledby', 'detail-name');
+    panel.innerHTML = '<div class="detail-head"><div class="detail-title"><h2 id="detail-name">' + escaped(variable.label) + '</h2>'
+      + '<span class="unit">' + escaped(variable.unit) + '</span></div><div class="tools" role="group" aria-label="Plot view">'
+      + toolButton('plus', 'Zoom in') + toolButton('minus', 'Zoom out') + toolButton('reset', 'Reset view') + '</div></div>'
+      + '<div class="readings"><span>Z<output data-read="z"></output></span><span>Reference<output data-read="reference"></output></span>'
+      + '<span>Table lookup<output data-read="lookup"></output></span><span>Difference<output data-read="residual"></output></span></div>'
+      + '<div class="plot-area"></div><div class="residual-head">'
+      + '<span class="residual-label" title="Table lookup minus reference">Residual</span><dl class="error-summary">'
+      + '<div><dt>Max. absolute error</dt><dd><span data-error="absolute">' + formatMetric(data, 'absolute') + '</span>'
+      + '<button type="button" class="peak-button" id="show-peak" title="Locate maximum absolute error" aria-label="Locate maximum absolute error at '
+      + peakZ + '">' + icon('locate') + peakZ + '</button></dd></div>'
+      + '<div><dt title="Active-zone normalized mean absolute error">Active-zone normalized MAE</dt>'
+      + '<dd data-error="active">' + formatMetric(data, 'active') + '</dd></div></dl></div><div class="plot-area"></div>';
+    const plotAreas = Array.from(panel.querySelectorAll('.plot-area'));
+    const readouts = Object.fromEntries(Array.from(panel.querySelectorAll('[data-read]'), element => [element.dataset.read, element]));
+    const tool = name => panel.querySelector('[data-tool="' + name + '"]');
+    let layouts = [];
+    let drag = null;
+
+    function drawCursor() {
+      const index = state.cursor ?? data.max_error_index;
+      const z = plotZ[index];
+      readouts.z.value = zGrid[index].toFixed(3);
+      for (const key of ['reference', 'lookup', 'residual']) readouts[key].value = number(data[key][index], 5);
+      layouts.forEach((layout, plotIndex) => {
+        const group = plotAreas[plotIndex].querySelector('[data-cursor]');
+        group.replaceChildren();
+        if (z < state.start || z > state.end) return;
+        const px = layout.x(z);
+        const mark = (key, className) => '<circle class="' + className + '" cx="' + px + '" cy="' + layout.y(data[key][index]) + '" r="4"/>';
+        group.innerHTML = '<line class="cursor-line" x1="' + px + '" x2="' + px + '" y1="' + layout.top + '" y2="' + layout.bottom + '"/>'
+          + (layout.difference ? mark('residual', 'cursor-delta') : mark('reference', 'cursor-ref') + mark('lookup', 'cursor-lookup'));
+      });
+    }
+
+    function redraw() {
+      layouts = [chart(data, 'large'), chart(data, 'delta')];
+      plotAreas.forEach((area, index) => { area.innerHTML = layouts[index].svg; });
+      tool('plus').disabled = state.end - state.start <= .035001;
+      tool('minus').disabled = state.start === 0 && state.end === 1;
+      tool('reset').disabled = tool('minus').disabled && state.cursor === null;
+      drawCursor();
+    }
+
+    function chartPosition(event, area, layout) {
+      const bounds = area.getBoundingClientRect();
+      const localX = (event.clientX - bounds.left) / bounds.width * layout.width;
+      return (localX - layout.left) / (layout.right - layout.left);
+    }
+
+    function plotCenter() {
+      const point = plotZ[state.cursor ?? data.max_error_index];
+      return point > state.start && point < state.end ? point : (state.start + state.end) / 2;
+    }
+
+    tool('plus').addEventListener('click', () => { zoom(.65, plotCenter()); redraw(); });
+    tool('minus').addEventListener('click', () => { zoom(1.54, plotCenter()); redraw(); });
+    tool('reset').addEventListener('click', () => { resetView(); redraw(); });
+    panel.querySelector('#show-peak').addEventListener('click', () => {
+      const point = plotZ[data.max_error_index];
+      const width = state.end - state.start;
+      if (point < state.start || point > state.end) {
+        state.start = Math.max(0, Math.min(1 - width, point - width / 2));
+        state.end = state.start + width;
+      }
+      state.cursor = null;
+      redraw();
+    });
+    plotAreas.forEach((area, index) => {
+      area.addEventListener('wheel', event => {
+        const fraction = chartPosition(event, area, layouts[index]);
+        if (fraction < 0 || fraction > 1) return;
+        event.preventDefault();
+        zoom(event.deltaY < 0 ? .84 : 1.19, state.start + fraction * (state.end - state.start));
+        redraw();
+      }, { passive: false });
+      area.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || state.end - state.start >= 1) return;
+        drag = { position: chartPosition(event, area, layouts[index]), start: state.start, width: state.end - state.start };
+        area.setPointerCapture(event.pointerId);
+        area.dataset.dragging = '';
+      });
+      area.addEventListener('pointermove', event => {
+        const fraction = chartPosition(event, area, layouts[index]);
+        if (drag) {
+          state.start = Math.min(1 - drag.width, Math.max(0, drag.start + (drag.position - fraction) * drag.width));
+          state.end = state.start + drag.width;
+          redraw();
+        } else if (fraction >= 0 && fraction <= 1) {
+          const z = state.start + fraction * (state.end - state.start);
+          let nearest = null;
+          let distance = Infinity;
+          for (const [index, coordinate] of plotZ.entries()) {
+            if (coordinate >= state.start && coordinate <= state.end && Math.abs(coordinate - z) < distance) {
+              nearest = index;
+              distance = Math.abs(coordinate - z);
+            }
+          }
+          if (nearest === null) return;
+          state.cursor = nearest;
+          tool('reset').disabled = false;
+          drawCursor();
+        }
+      });
+      area.addEventListener('lostpointercapture', () => { drag = null; delete area.dataset.dragging; });
+    });
+    redraw();
+    return panel;
+  }
+
+  function visibleVariables() {
+    if (state.group !== 'species') return groups[state.group];
+    const query = byId('search').value.trim().toLowerCase().replace(/[₀-₉]/g, digit => String(subscripts.indexOf(digit)));
+    const sort = byId('sort').value;
+    const result = groups.species.filter(variable => variable.name.toLowerCase().includes(query)
+      && (!state.selected.size || state.selected.has(variable.key)));
+    if (sort !== 'species') {
+      const property = sort === 'active' ? 'active_zone_nmae_percent' : 'max_absolute_error';
+      result.sort((a, b) => (curves.get(b.key)[property] ?? -1) - (curves.get(a.key)[property] ?? -1));
+    }
+    return result;
+  }
+
+  function renderDetail() {
+    inspector.replaceChildren();
+    if (state.detail !== null) inspector.append(detailPanel(curves.get(state.detail)));
+  }
+
+  function render() {
+    const workspace = byId('output-panel');
+    tabs.forEach(tab => {
+      const active = tab.dataset.group === state.group;
+      tab.hidden = groups[tab.dataset.group].length === 0;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      if (active) workspace.setAttribute('aria-labelledby', tab.id);
+    });
+    const isSpecies = state.group === 'species';
+    const visible = visibleVariables();
+    const single = !isSpecies && visible.length === 1;
+    const sortMenu = byId('sort');
+    const metricMode = isSpecies && sortMenu.value === 'active' ? 'active' : 'absolute';
+    byId('filters').hidden = !isSpecies;
+    byId('catalog').hidden = single;
+    workspace.classList.toggle('single', single);
+    const speciesCount = groups.species.length;
+    byId('variable-count').textContent = isSpecies
+      ? (visible.length === speciesCount ? String(speciesCount) : visible.length + ' of ' + speciesCount) + ' species · ' + groups.species[0].unit
+      : visible.length + ' outputs';
+    byId('metric-label').textContent = sortMenu.querySelector('[value="' + metricMode + '"]').textContent;
+    if (!visible.some(variable => variable.key === state.detail)) {
+      state.detail = visible[0]?.key ?? null;
+      resetView();
+    }
+    if (single) gallery.replaceChildren();
+    else if (visible.length) gallery.replaceChildren(...visible.map(variable => tile(curves.get(variable.key), isSpecies, metricMode)));
+    else {
+      const empty = document.createElement('p');
+      empty.className = 'empty';
+      empty.textContent = 'No species match the current filters.';
+      gallery.replaceChildren(empty);
+    }
+    renderDetail();
+  }
+
+  gallery.addEventListener('click', event => {
+    const button = event.target.closest('.tile');
+    if (!button || button.dataset.variable === state.detail) return;
+    gallery.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-pressed', 'true');
+    state.detail = button.dataset.variable;
+    resetView();
+    renderDetail();
+  });
+
+  function updateSelection() {
+    byId('pick-button').querySelector('span').textContent = state.selected.size ? state.selected.size + ' selected' : 'Select species';
+    byId('clear-species').disabled = state.selected.size === 0;
+  }
+
+  function openPicker(open) {
+    byId('pick-menu').hidden = !open;
+    byId('pick-button').setAttribute('aria-expanded', String(open));
+  }
+
+  function selectTab(tab) {
+    state.group = tab.dataset.group;
+    state.detail = null;
+    openPicker(false);
+    resetView();
+    render();
+  }
+
+  options(byId('case'), cases.map(item => item.case_name));
+  byId('case').addEventListener('change', changeCase);
+  byId('profile').addEventListener('change', changeProfile);
+  byId('search').addEventListener('input', render);
+  byId('sort').addEventListener('change', render);
+  byId('pick-button').addEventListener('click', () => openPicker(byId('pick-menu').hidden));
+  byId('clear-species').addEventListener('click', () => {
+    state.selected.clear();
+    populateSpecies();
+    updateSelection();
+    render();
+  });
+  function populateSpecies() {
+    pickList.replaceChildren();
+    for (const variable of groups.species) {
+      const label = document.createElement('label');
+      label.className = 'choice';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = state.selected.has(variable.key);
+      input.addEventListener('change', () => {
+        if (input.checked) state.selected.add(variable.key);
+        else state.selected.delete(variable.key);
+        updateSelection();
+        render();
+      });
+      label.append(input, variable.label);
+      pickList.append(label);
+    }
+  }
+  document.addEventListener('click', event => { if (!byId('picker').contains(event.target)) openPicker(false); });
+  byId('picker').addEventListener('keydown', event => {
+    if (event.key === 'Escape') { openPicker(false); byId('pick-button').focus(); }
+  });
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const available = tabs.filter(item => !item.hidden);
+      const index = available.indexOf(tab);
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? available.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : -1) + available.length) % available.length;
+      selectTab(available[next]);
+      available[next].focus();
+    });
+  });
+  byId('clear-species').disabled = true;
+  changeCase();
+</script>
+</body>
+</html>

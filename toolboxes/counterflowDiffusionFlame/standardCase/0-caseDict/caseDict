@@ -1,0 +1,274 @@
+// ChatFGM unified case source of truth.
+// This schema assumes one-dimensional counterflow diffusion flamelets.
+// This file defines the FGM case. The workflow covers requirements clarification, chemical mechanism preparation,
+// flamelet computation, FGM tabulation, a priori validation, and report generation.
+// workflowState records the most recently started execution stage.
+// 0:notStarted; A:mechanism; B:flamelet; C:tabulation; D:validation; E:report.
+// Confirmed stage deliveries are recorded in extensions.completedWorkflowStages.
+
+workflowState 0;
+
+caseMeta
+{
+    caseName              ;
+    tags                  ;
+    notes                 ;
+
+    units
+    {
+        length                        m;
+        time                          s;
+        temperature                   K;
+        pressure                      Pa;
+        strainRate                    1/s;
+        density                       kg/m^3;
+        molecularWeight               kg/kmol;
+        moleFraction                  mol/mol;
+        massFraction                  kg/kg;
+        progressVariable              kg/kg;
+        mixtureFraction               1;
+        normalizedProgressVariable    1;
+        speciesProductionRate         kmol/(m^3*s);
+        progressVariableSource        kg/(m^3*s);
+    }
+}
+
+intent
+{
+    userIntent            ;
+    targetOutputs         ;
+
+    primaryAssumptions
+    (
+        "Unity Lewis number assumption: Le = 1 for all species."
+    );
+
+    knownLimitations    ();
+    openQuestions       ();
+    decisionLog         ();
+}
+
+mechanism
+{
+    sourceDirectory ;   // Directory containing the original mechanism files provided by the user.
+    reactiveFile    "A-mechanism/mechanism.yaml";
+    nonReactiveFile "A-mechanism/mechanism-noreactions.yaml";
+}
+
+boundaryConditions
+{
+    fuelComposition     ;
+    oxidizerComposition ;
+    compositionBasis    ;   // moleFraction | massFraction
+
+    // Fill either the four sweep lists or operatingConditions.
+    // For a parameter sweep, take the Cartesian product of the four lists.
+    fuelTemperature      ;
+    oxidizerTemperature  ;
+    pressure             ;
+    transientStrainRates ;
+
+    // For explicit cases, each named entry defines one operating condition.
+    operatingConditions
+    {
+        // case01
+        // {
+        //     fuelTemperature     300;
+        //     oxidizerTemperature 800;
+        //     pressure            100000;
+        //     transientStrainRate 300;
+        // }
+    }
+
+    // Strain-rate sequence for steady continuation of each ignited case.
+    continuationStrainRates ;
+}
+
+// Default numerical settings; use unless explicitly overridden.
+numericalSetup
+{
+    mixingLine
+    {
+        globalTimeStep          1e-6;   // s
+
+        parallel
+        {
+            enabled             true;   // true | false
+            nWorkers            2;      // Concurrent cases.
+            nThreadsPerWorker   8;      // Solver threads per case.
+        }
+    }
+
+    ignition
+    {
+        globalTimeStep          5e-8;   // s
+
+        profileSaving
+        {
+            startupDeltaTThreshold  1.0;    // K
+            regularDeltaTThreshold  10.0;   // K
+            nZPoints                201;    // Monitoring points in Z.
+        }
+
+        parallel
+        {
+            enabled             true;   // true | false
+            nWorkers            2;      // Concurrent cases.
+            nThreadsPerWorker   8;      // Solver threads per case.
+        }
+    }
+
+    continuation
+    {
+        globalTimeStep          2e-5;   // s
+
+        parallel
+        {
+            enabled             true;   // true | false
+            nWorkers            2;      // Concurrent cases.
+            nThreadsPerWorker   8;      // Solver threads per case.
+        }
+    }
+
+    ffm
+    {
+        initialGlobalTimeStep   2e-5;   // s; burning-state initialization.
+        globalTimeStep          2e-5;   // s
+
+        profileSaving
+        {
+            deltaTmaxThreshold      40.0;   // K
+            rmsDeltaTThreshold      10.0;   // K
+            nZPoints                201;    // Monitoring points in Z.
+        }
+
+        parallel
+        {
+            enabled             true;   // true | false
+            nWorkers            2;      // Concurrent cases.
+            nThreadsPerWorker   8;      // Solver threads per case.
+        }
+    }
+}
+
+tabulation
+{
+    lookupAxes
+    {
+        axes ;   // Ordered list of query-axis identifiers inferred from user intent.
+
+        definitions
+        {
+            // The agent must add one entry for each identifier listed in axes.
+            // Axis identifiers do not imply physical meaning.
+            // axisName
+            // {
+            //     definition ;   // Explicit physical definition of this axis.
+            //     unit       ;   // Required if absent from caseMeta.units.
+            // }
+        }
+    }
+
+    outputVariables
+    {
+        progressVariableSource             true;   // Always true.
+        speciesMassFractions   ;   // all | an explicit species list
+        additionalVariables    ;   // List of additional output identifiers inferred from user intent.
+
+        definitions
+        {
+            // The agent must add one entry for each identifier listed in additionalVariables.
+            // Output identifiers do not imply physical meaning.
+            // additionalVariableName
+            // {
+            //     definition ;   // Explicit physical definition of this output.
+            //     unit       ;   // Required if absent from caseMeta.units.
+            // }
+        }
+    }
+
+    progressVariableDefinition
+    {
+        definition ;   // Physical definition of the progress variable.
+        names      ;   // Ordered list of species names.
+        weights    ;   // Corresponding weights in the same order.
+    }
+
+    grid
+    {
+        Z   // Mixture fraction.
+        {
+            // nPoints     ;
+            // description ;   // Distribution of mixture-fraction grid points.
+        }
+
+        C   // Normalized progress variable.
+        {
+            // nPoints     ;
+            // description ;   // Distribution of normalized progress-variable grid points.
+        }
+    }
+}
+
+validation
+{
+    nConditions           ;   // Number of tabulated conditions to validate.
+    conditionSelection    ;   // How to select representative conditions from those already tabulated.
+    nProfilesPerCondition ;   // One count if all conditions have the same number of profiles, otherwise a list in validation_inputs.json cases order.
+    profileSelection      ;   // How to select representative complete reference profiles for each selected condition.
+}
+
+report
+{
+    // title      ;
+    // language   ;   // zh-CN | en
+    // outputFile ;   // E-report/report.md
+
+    sections
+    {
+        // problemDefinition       ;
+        // assumptions             ;
+        // mechanism               ;
+        // boundaryConditions      ;
+        // numericalSetup          ;
+        // flameletComputation     ;
+        // tabulation              ;
+        // validation              ;
+        // discussionAndLimitations;
+        // conclusions             ;
+    }
+}
+
+errors
+{
+    summary
+    {
+        // total             ;
+        // open              ;
+        // blocking          ;
+        // resolved          ;
+        // lastErrorId       ;
+    }
+
+    // error_0001
+    // {
+    //     stage ;   // caseSetup | mechanism | flamelet | tabulation | validation | report
+    //     status        ;   // open | investigating | fixed | verified | wontFix
+    //     blocking      ;   // true | false; whether the error prevents the workflow from continuing
+    //     affectedCases ;   // IDs of affected calculation cases, if applicable
+    //     message       ;   // What happened
+    //     evidence      ;   // Relative paths to relevant logs or results
+    //     resolution    ;   // How the error was addressed
+    //     verification  ;   // How the resolution was verified
+    // }
+}
+
+extensions
+{
+    // Optional list of stages whose deliverables are verified for the current case scope.
+    // Remove entries when rework or changed inputs invalidate those deliverables.
+    completedWorkflowStages ();
+
+    // Project-specific fields that have not yet become part of the stable
+    // ChatFGM schema can live here temporarily.
+}

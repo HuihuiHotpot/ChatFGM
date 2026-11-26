@@ -1,0 +1,245 @@
+.panel--projects .panel-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.tree-viewport {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding-top: 4px;
+}
+
+.tree-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 8px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--n-250) transparent;
+}
+
+.tree-scroll:focus {
+  outline: none;
+}
+
+.tree-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tree-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tree-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background: var(--n-250);
+  background-clip: content-box;
+}
+
+.tree-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--n-350);
+  background-clip: content-box;
+}
+
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-item + .tree-item {
+  margin-top: 0;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 27px;
+  padding: 0 6px 0 3px;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms ease-out;
+}
+
+.tree-row:hover {
+  background: var(--bg-hover);
+}
+
+.tree-row.is-selected {
+  background: var(--brand-soft);
+  box-shadow:
+    inset 0 0 0 1px var(--brand-line),
+    inset 2px 0 0 var(--brand);
+}
+
+.tree-row.is-selected:hover {
+  background: var(--brand-soft-2);
+}
+
+.tree-arrow,
+.tree-name {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tree-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 4px;
+  color: var(--text-faint);
+  transition:
+    color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+
+.tree-arrow:hover {
+  color: var(--text);
+  background: rgba(25, 23, 20, 0.07);
+}
+
+.tree-arrow-icon {
+  display: block;
+  width: 11px;
+  height: 11px;
+  transition: transform 150ms ease-out;
+}
+
+.tree-arrow[aria-expanded="true"] .tree-arrow-icon {
+  transform: rotate(90deg);
+}
+
+.tree-folder,
+.tree-file {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--text-faint);
+}
+
+.tree-folder-icon,
+.tree-file-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.tree-name {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 3px 2px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--n-800);
+}
+
+.tree-row.is-selected .tree-name {
+  color: var(--brand-ink);
+  font-weight: 500;
+}
+
+.tree-arrow:focus-visible,
+.tree-name:focus-visible,
+.tree-row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.tree-empty {
+  margin: 0;
+  padding: 2px 6px 4px 42px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.tree-arrow-space {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.tree-children {
+  margin: 0;
+  padding: 0 0 0 15px;
+  list-style: none;
+}
+
+.tree-item.is-cut > .tree-row {
+  opacity: 0.45;
+}
+
+.tree-rename {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1px 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--bg-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.tree-rename:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: -1px;
+}
+
+.tree-rename[aria-invalid="true"] {
+  border-color: var(--n-500);
+}
+
+.tree-rename:disabled {
+  color: var(--text-faint);
+  background: var(--bg-panel);
+}
+
+.tree-hint {
+  margin: 0;
+  padding: 1px 6px 3px 42px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+
+.tree-hint[role="alert"] {
+  color: var(--danger);
+}
+
+.tree-confirm-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.tree-confirm-files {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-faint);
+}
